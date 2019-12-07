@@ -1,13 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
-
+import os
 import traceback
-import time
 
 import pymongo
 
-from shinken.log import logger
+ALIGNAK = False
+if os.environ.get('ALIGNAK_SHINKEN_UI', None):
+    if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
+        ALIGNAK = True
+
+# pylint: disable=invalid-name
+if ALIGNAK:
+    # Specific logger configuration
+    import logging
+    from alignak.log import ALIGNAK_LOGGER_NAME
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 from .metamodule import MetaModule
 
@@ -29,14 +40,14 @@ class LogsMetaModule(MetaModule):
         self.module = None
         if modules:
             if len(modules) > 1:
-                logger.warning("[WebUI] Too much logs modules declared (%s > 1). Using %s.",
+                logger.warning("Too much logs modules declared (%s > 1). Using %s.",
                                len(modules), modules[0])
             self.module = modules[0]
         else:
             try:
-                self.module = MongoDBLogs(app.modconf)
+                self.module = MongoDBLogs(app.get_config())
             except Exception as exp:
-                logger.warning('[WebUI] Exception %s', str(exp))
+                logger.warning('Exception %s', str(exp))
 
     def is_available(self):
         if isinstance(self.module, MongoDBLogs):
@@ -60,29 +71,29 @@ class MongoDBLogs(object):
 
     def __init__(self, mod_conf):
         self.uri = getattr(mod_conf, 'uri', 'mongodb://localhost')
-        logger.info('[WebUI-mongo-logs] mongo uri: %s', self.uri)
+        logger.info('[mongo-logs] mongo uri: %s', self.uri)
 
         self.replica_set = getattr(mod_conf, 'replica_set', None)
         if self.replica_set and int(pymongo.version[0]) < 3:
-            logger.error('[WebUI-mongo-logs] Can not initialize module with '
+            logger.error('[mongo-logs] Can not initialize module with '
                          'replica_set because your pymongo lib is too old. '
                          'Please install it with a 3.x+ version from '
                          'https://pypi.python.org/pypi/pymongo')
             return
 
-        self.database = getattr(mod_conf, 'database', 'shinken')
+        self.database = getattr(mod_conf, 'database', 'alignak')
         self.username = getattr(mod_conf, 'username', None)
         self.password = getattr(mod_conf, 'password', None)
-        logger.info('[WebUI-mongo-logs] database: %s, user: %s', self.database, self.username)
+        logger.info('[mongo-logs] database: %s, user: %s', self.database, self.username)
 
         self.logs_collection = getattr(mod_conf, 'logs_collection', 'logs')
-        logger.info('[WebUI-mongo-logs] shinken logs collection: %s', self.logs_collection)
+        logger.info('[mongo-logs] shinken logs collection: %s', self.logs_collection)
 
         self.hav_collection = getattr(mod_conf, 'hav_collection', 'availability')
-        logger.info('[WebUI-mongo-logs] hosts availability collection: %s', self.hav_collection)
+        logger.info('[mongo-logs] hosts availability collection: %s', self.hav_collection)
 
         # self.max_records = int(getattr(mod_conf, 'max_records', '200'))
-        # logger.info('[WebUI-mongo-logs] max records: %s' % self.max_records)
+        # logger.info('[mongo-logs] max records: %s' % self.max_records)
 
         self.mongodb_fsync = getattr(mod_conf, 'mongodb_fsync', "True") == "True"
         self.is_connected = False
@@ -90,12 +101,12 @@ class MongoDBLogs(object):
         self.db = None
 
         if not self.uri:
-            logger.warning("[WebUI-mongo-logs] No Mongodb connection configured!")
+            logger.warning("[mongo-logs] No Mongodb connection configured!")
             return
 
         if self.uri:
-            logger.info("[WebUI-mongo-logs] Trying to open a Mongodb connection to %s, database: %s",
-                        self.uri, self.database)
+            logger.info("[mongo-logs] Trying to open a Mongodb connection to %s, "
+                        "database: %s", self.uri, self.database)
             self.open()
         else:
             logger.warning("You do not have any MongoDB connection for log module installed. "
@@ -105,7 +116,7 @@ class MongoDBLogs(object):
         try:
             from pymongo import MongoClient
         except ImportError:
-            logger.error('[WebUI-mongo-logs] Can not import pymongo.MongoClient')
+            logger.error('[mongo-logs] Can not import pymongo.MongoClient')
             raise
 
         try:
@@ -114,27 +125,27 @@ class MongoDBLogs(object):
                                        fsync=self.mongodb_fsync, connect=True)
             else:
                 self.con = MongoClient(self.uri, fsync=self.mongodb_fsync, connect=True)
-            logger.info("[WebUI-mongo-logs] connected to mongodb: %s", self.uri)
+            logger.info("[mongo-logs] connected to mongodb: %s", self.uri)
 
             self.db = getattr(self.con, self.database)
-            logger.info("[WebUI-mongo-logs] connected to the database: %s", self.database)
+            logger.info("[mongo-logs] connected to the database: %s", self.database)
 
             if self.username and self.password:
                 self.db.authenticate(self.username, self.password)
-                logger.info("[WebUI-mongo-logs] user authenticated: %s", self.username)
+                logger.info("[mongo-logs] user authenticated: %s", self.username)
 
             # Check if the configured logs collection exist
-            logger.info("[WebUI-mongo-logs] DB collections: %s", self.db.collection_names())
+            logger.info("[mongo-logs] DB collections: %s", self.db.collection_names())
             if self.logs_collection not in self.db.collection_names():
-                logger.warning("[WebUI-mongo-logs] configured logs collection '%s' "
+                logger.warning("[mongo-logs] configured logs collection '%s' "
                                "does not exist in the database", self.logs_collection)
             else:
                 self.is_connected = True
-                logger.info('[WebUI-mongo-logs] database connection established')
-        except Exception as e:
-            logger.error("[WebUI-mongo-logs] Exception: %s", str(e))
-            logger.debug("[WebUI-mongo-logs] Exception type: %s", type(e))
-            logger.debug("[WebUI-mongo-logs] Back trace of this kill: %s", traceback.format_exc())
+                logger.info('[mongo-logs] database connection established')
+        except Exception as exp:
+            logger.error("[mongo-logs] Exception: %s", str(exp))
+            logger.debug("[mongo-logs] Exception type: %s", type(exp))
+            logger.debug("[mongo-logs] Back trace of this kill: %s", traceback.format_exc())
             # Depending on exception type, should raise ...
             self.is_connected = False
             raise
@@ -160,8 +171,8 @@ class MongoDBLogs(object):
             filters = {}
 
         query = []
-        for k, v in filters.items():
-            query.append({k: v})
+        for key, value in list(filters.items()):
+            query.append({key: value})
         if range_start:
             query.append({'time': {'$gte': range_start}})
         if range_end:

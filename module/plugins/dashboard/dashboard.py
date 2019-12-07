@@ -32,60 +32,60 @@ app = None
 
 # Our page
 def get_page():
-    user = app.request.environ.get('USER', None)
+    user = app.get_user()
 
     # Look for the widgets as the json entry
-    s = app.prefs_module.get_ui_user_preference(user, 'widgets')
+    pref = app.prefs_module.get_ui_user_preference(user, 'widgets')
     # If void, create an empty one
-    if not s:
+    if not pref:
         app.prefs_module.set_ui_user_preference(user, 'widgets', '[]')
-        s = '[]'
-    widget_names = json.loads(s)
+        pref = '[]'
+    widget_names = json.loads(pref)
     widgets = []
 
-    for w in widget_names:
-        if 'id' not in w or 'position' not in w:
+    for widget in widget_names:
+        if 'id' not in widget or 'position' not in widget:
             continue
 
         # by default the widget is for /dashboard
-        w['for'] = w.get('for', 'dashboard')
-        if not w['for'] == 'dashboard':
+        widget['for'] = widget.get('for', 'dashboard')
+        if not widget['for'] == 'dashboard':
             # Not a dashboard widget? I don't want it so
             continue
 
-        options = w.get('options', {})
-        collapsed = w.get('collapsed', '0')
+        options = widget.get('options', {})
+        collapsed = widget.get('collapsed', '0')
 
-        options["wid"] = w["id"]
+        options["wid"] = widget["id"]
         options["collapsed"] = collapsed
-        w['options'] = options
-        w['options_json'] = json.dumps(options)
-        args = {'wid': w['id'], 'collapsed': collapsed}
+        widget['options'] = options
+        widget['options_json'] = json.dumps(options)
+        args = {'wid': widget['id'], 'collapsed': collapsed}
         args.update(options)
-        w['options_uri'] = '&'.join('%s=%s' % (k, v) for (k, v) in args.iteritems())
-        widgets.append(w)
+        widget['options_uri'] = '&'.join('%s=%s' % (k, v) for (k, v) in args.items())
+        widgets.append(widget)
 
     return {'widgets': widgets}
 
 
 def get_currently():
-    user = app.request.environ.get('USER', None)
+    user = app.get_user()
 
     # Search panels preferences
-    s = app.prefs_module.get_ui_user_preference(user, 'panels')
+    pref = app.prefs_module.get_ui_user_preference(user, 'panels')
     # If void, create an empty one
-    if not s:
+    if not pref:
         app.prefs_module.set_ui_user_preference(user, 'panels', '{}')
-        s = '{}'
-    panels = json.loads(s)
+        pref = '{}'
+    panels = json.loads(pref)
 
     # Search graphs preferences
-    s = app.prefs_module.get_ui_user_preference(user, 'graphs')
+    pref = app.prefs_module.get_ui_user_preference(user, 'graphs')
     # If void, create an empty one
-    if not s:
+    if not pref:
         app.prefs_module.set_ui_user_preference(user, 'graphs', '{}')
-        s = '{}'
-    graphs = json.loads(s)
+        pref = '{}'
+    graphs = json.loads(pref)
 
     return {'panels': panels, 'graphs': graphs}
 
@@ -95,6 +95,6 @@ pages = {
         'name': 'Dashboard', 'route': '/dashboard', 'view': 'dashboard', 'static': True
     },
     get_currently: {
-        'name': 'Currently', 'route': '/dashboard/currently', 'view': 'currently', 'static': True
+        'name': 'Currently', 'route': '/currently', 'view': 'currently', 'static': True
     }
 }

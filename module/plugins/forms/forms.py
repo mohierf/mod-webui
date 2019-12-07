@@ -29,33 +29,32 @@ app = None
 
 
 def form_submit_check(name):
-    t = 'host'
-    if '/' in name:
-        t = 'service'
-
-    return {'name': name, 'obj_type': t}
+    return {
+        'name': name,
+        'obj_type': 'service' if '/' in name else 'host'
+    }
 
 
 def form_ack_add(name):
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
     return {'elt': elt, 'name': name}
 
 
 def form_ack_remove(name):
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
     return {'elt': elt, 'name': name}
 
 
 def form_downtime_add(name):
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
     return {'elt': elt, 'name': name, 'default_downtime_hours': app.default_downtime_hours}
 
 
 def form_downtime_delete_all(name):
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
     return {'elt': elt, 'name': name}
 

@@ -25,28 +25,41 @@
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
 
 # We will need external commands here
+import os
 import re
 import time
-from shinken.external_command import ExternalCommand, ExternalCommandManager
-from shinken.log import logger
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    from alignak.external_command import ExternalCommand, ExternalCommandManager
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.external_command import ExternalCommand, ExternalCommandManager
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
 
 
 # Function handling $NOW$ macro
-def subsNOW():
+def substitute_now():
     return str(int(time.time()))
 
 
-def subsSLASH():
+def substitute_slash():
     return '/'
 
 
 # This dictionary associate macros with expansion function
 subs = {
-    '$NOW$': subsNOW,
-    '$SLASH$': subsSLASH,
+    '$NOW$': substitute_now,
+    '$SLASH$': substitute_slash,
     # Add new macros here
 }
 
@@ -83,27 +96,29 @@ def get_page(cmd=None):
     if not app.can_action():
         return forge_response(callback, 403, 'You are not authorized to launch commands')
 
-    now = subsNOW()
+    now = substitute_now()
     elts = cmd.split('/')
-    cmd_name = elts[0]
+    cmd_name = elts[0].upper()
+    if ALIGNAK:
+        cmd_name = elts[0].lower()
     cmd_args = elts[1:]
-    logger.info("[WebUI-actions] got command: %s with args: %s.", cmd_name, cmd_args)
+    logger.info("[actions] got command: %s with args: %s.", cmd_name, cmd_args)
 
-    # Check if the command exist in the Shinken external command list
+    # Check if the command exist in the Alignak/Shinken external command list
     if cmd_name not in ExternalCommandManager.commands:
-        logger.error("[WebUI-actions] unknown command: %s", cmd_name)
+        logger.error("[actions] unknown command: %s", cmd_name)
         return forge_response(callback, 404, 'Unknown command %s' % cmd_name)
 
-    try:
-        extcmd = u"[%s] %s" % (now, ';'.join(elts))
-    except UnicodeDecodeError as e:
-        extcmd = "[%s] %s" % (now, ';'.join(elts))
+    # try:
+    #     extcmd = "[%s] %s" % (now, ';'.join(elts))
+    # except UnicodeDecodeError as e:
+    #     extcmd = "[%s] %s" % (now, ';'.join(elts))
+    ext_cmd = "[%s] %s" % (now, ';'.join(elts))
 
     # Expand macros
-    extcmd = expand_macros(extcmd)
-    logger.debug("[WebUI-actions] external command: %s.", extcmd)
-    e = ExternalCommand(extcmd)
-    app.push_external_command(e)
+    ext_cmd = expand_macros(ext_cmd)
+    logger.debug("[actions] external command: %s.", ext_cmd)
+    app.push_external_command(ExternalCommand(ext_cmd))
 
     return forge_response(callback, 200, response_text)
 

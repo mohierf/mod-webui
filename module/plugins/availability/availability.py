@@ -23,16 +23,29 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import time
 import datetime
-import urllib
+import arrow
 
 from collections import OrderedDict
 
-import arrow
+try:
+    from urllib.parse import unquote
+except ImportError:
+    from urllib import unquote
 
-from shinken.log import logger
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -42,13 +55,13 @@ def _get_availability(*args, **kwargs):
     if app.logs_module.is_available():
         return app.logs_module.get_ui_availability(*args, **kwargs)
 
-    logger.warning("[WebUI-availability] no get availability external module defined!")
+    logger.warning("no get availability external module defined!")
     return None
 
 
 def get_element(name):
-    user = app.bottle.request.environ['USER']
-    name = urllib.unquote(name)
+    user = app.get_user()
+    name = unquote(name)
     elt = app.datamgr.get_element(name, user) or app.redirect404()
 
     today = arrow.now().replace(hour=0, minute=0, second=0)
@@ -87,19 +100,19 @@ def get_element(name):
 
 
 def get_page():
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
 
     # Apply search filter if exists ...
     search = app.request.query.get('search', "type:host")
     if "type:host" not in search:
         search = "type:host " + search
-    logger.debug("[WebUI-availability] search parameters '%s'", search)
+    logger.debug("search parameters '%s'", search)
     hosts = app.datamgr.search_hosts_and_services(search, user)
 
     midnight_timestamp = time.mktime(datetime.date.today().timetuple())
     range_start = int(app.request.GET.get('range_start', midnight_timestamp))
     range_end = int(app.request.GET.get('range_end', midnight_timestamp + 86399))
-    logger.debug("[WebUI-availability] get_page, range: %d - %d", range_start, range_end)
+    logger.debug("get_page, range: %d - %d", range_start, range_end)
 
     records = [
         _get_availability(elt=host, range_start=range_start, range_end=range_end) for host in hosts

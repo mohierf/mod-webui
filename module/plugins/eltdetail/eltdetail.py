@@ -22,9 +22,21 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import time
 
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -33,8 +45,10 @@ app = None
 # Host element view
 def show_host(host_name):
     # Ok, we can lookup it
-    user = app.bottle.request.environ['USER']
-    h = app.datamgr.get_host(host_name, user) or app.redirect404()
+    user = app.get_user()
+
+    host = app.datamgr.get_host(host_name, user) or app.redirect404()
+    logger.debug("Show host: %s", host)
 
     # Set hostgroups level ...
     app.datamgr.set_hostgroups_level(user)
@@ -45,7 +59,7 @@ def show_host(host_name):
     graphend = int(app.request.GET.get('graphend', str(now)))
 
     return {
-        'elt': h,
+        'elt': host,
         'graphstart': graphstart, 'graphend': graphend,
         'configintervallength': app.datamgr.get_configuration_parameter('interval_length')
     }
@@ -53,8 +67,10 @@ def show_host(host_name):
 
 # Service element view
 def show_service(host_name, service):
-    user = app.bottle.request.environ['USER']
-    s = app.datamgr.get_service(host_name, service, user) or app.redirect404()
+    user = app.get_user()
+
+    service = app.datamgr.get_service(host_name, service, user) or app.redirect404()
+    logger.debug("Show service: %s", service)
 
     # Set servicegroups level ...
     app.datamgr.set_servicegroups_level(user)
@@ -65,7 +81,7 @@ def show_service(host_name, service):
     graphend = int(app.request.GET.get('graphend', str(now)))
 
     return {
-        'elt': s,
+        'elt': service,
         'graphstart': graphstart, 'graphend': graphend,
         'configintervallength': app.datamgr.get_configuration_parameter('interval_length')
     }

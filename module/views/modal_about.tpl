@@ -1,5 +1,6 @@
 %if alignak:
 %from alignak.version import VERSION
+%fmwk="Alignak"
 %else:
 %from shinken.bin import VERSION
 %end

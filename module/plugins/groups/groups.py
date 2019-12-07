@@ -29,7 +29,7 @@ app = None
 
 
 def show_contactgroups():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     # Set contactgroups level ...
     # @mohierf: should be done only once for initialization ... to be delegated to datamanager!
@@ -51,7 +51,7 @@ def show_hostgroup(name):
 
 
 def show_hostgroups():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     # Set hostgroups level ...
     # @mohierf: should be done only once for initialization ... to be delegated to datamanager!
@@ -68,7 +68,7 @@ def show_hostgroups():
 
 
 def show_hostgroups_dashboard():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     # Set hostgroups level ...
     app.datamgr.set_hostgroups_level(user)
@@ -88,7 +88,7 @@ def show_servicegroup(name):
 
 
 def show_servicegroups():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     # Set servicegroups level ...
     # @mohierf: should be done only once for initialization ... to be delegated to datamanager!

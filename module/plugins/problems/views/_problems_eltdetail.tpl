@@ -123,12 +123,13 @@
         %include("_problems_table.tpl", pbs=pb.impacts)
         %end
 
-        <h4 class="page-header" title="Only the last 60 days comments"><i class="fas fa-comment"></i> Recent comments</h4>
         %# We just need < 60 days comments
+        <h4 class="page-header"><i class="fas fa-chart-line"></i> Comments</h4>
         %import datetime
         %import time
         %since = int(time.mktime((datetime.datetime.now() - datetime.timedelta(days = 60)).timetuple()))
-        %include("_eltdetail_comment_table.tpl", elt=pb, comments=[ c for c in pb.comments if c.entry_time > since])
+        %comments = [ c for c in pb.comments if c.entry_time > since]
+        %include("_eltdetail_comment_table.tpl", elt=pb, comments=comments, title="Only the last 60 days comments")
 
         %if pb.downtimes:
         <h4 class="page-header"><i class="fas fa-clock"></i></i> Downtimes</h4>

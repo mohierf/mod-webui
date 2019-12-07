@@ -21,12 +21,21 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
 import os
 
 from config_parser import ConfigParser
 
-from shinken.log import logger
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Get plugin's parameters from configuration file (not useful currently but future ideas ...)
 params = {

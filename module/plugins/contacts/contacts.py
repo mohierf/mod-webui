@@ -22,9 +22,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
-# import user
+import os
 from ui_user import User
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -32,15 +43,20 @@ app = None
 
 # Contact page
 def show_contact(name):
-    user = app.request.environ['USER']
+    user = app.get_user()
     contact = app.datamgr.get_contact(name=name, user=user) or app.redirect404()
+    logger.debug("Show contact: %s", contact)
+
+    c = app.datamgr.get_contact(name="generic-contact", user=user, template=True) or \
+        app.redirect404()
+    logger.info("Contact template: %s", c)
 
     return {'contact': User.from_contact(contact)}
 
 
 # All contacts
 def show_contacts():
-    user = app.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     return {'contacts': sorted(app.datamgr.get_contacts(user=user), key=lambda c: c.contact_name)}

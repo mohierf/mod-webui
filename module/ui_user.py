@@ -23,14 +23,28 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
+import os
 
+ALIGNAK = False
+if os.environ.get('ALIGNAK_SHINKEN_UI', None):
+    if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
+        ALIGNAK = True
+if ALIGNAK:
+    # Specific logger configuration
+    import logging
+    from alignak.log import ALIGNAK_LOGGER_NAME
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
 
-from shinken.objects import Contact
-from shinken.log import logger
+    from alignak.objects.contact import Contact
+else:
+    from shinken.log import logger
 
-from shinken.objects.contact import Contact
-from shinken.objects.host import Host
-from shinken.objects.service import Service
+    from shinken.objects import Contact
+
+    from shinken.objects.contact import Contact
+    from shinken.objects.host import Host
+    from shinken.objects.service import Service
+
 
 class User(Contact):
     session = None
@@ -42,7 +56,7 @@ class User(Contact):
         self.session = session
         for dictionary in information:
             for key in dictionary:
-                logger.debug("[WebUI] user information: %s = %s", key, dictionary[key])
+                logger.debug("user information: %s = %s", key, dictionary[key])
                 setattr(self, key, dictionary[key])
 
     def get_session(self):
@@ -54,7 +68,7 @@ class User(Contact):
 
         return getattr(self, 'name', 'Unnamed')
 
-    def get_name(self):
+    def get_name(self, index=False):
         name = self.get_username()
         if getattr(self, 'realname', None):
             name = "%s %s" % (getattr(self, 'firstname'), getattr(self, 'realname'))

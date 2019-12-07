@@ -23,9 +23,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import time
-from shinken.log import logger
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -33,7 +44,7 @@ app = None
 
 # Our page
 def get_page():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     search = app.get_and_update_search_string_with_problems_filters()
 

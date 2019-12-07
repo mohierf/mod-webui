@@ -23,12 +23,22 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import json
 import time
 import traceback
 
-from shinken.log import logger
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -41,7 +51,7 @@ def create_ticket(name):
     if not app.helpdesk_module.is_available():
         app.redirect404()
 
-    logger.info("[WebUI-helpdesk] request to create a ticket for %s", name)
+    logger.info("request to create a ticket for %s", name)
 
     result = {'status': 405, 'message': "Ticket creation failed", 'ticket': None}
 
@@ -60,12 +70,12 @@ def create_ticket(name):
         'title': app.request.query.get('ticket_title', ''),
         'content': app.request.query.get('ticket_content', '')
     }
-    logger.info("[WebUI-helpdesk] request to create a ticket with %s", parameters)
+    logger.info("request to create a ticket with %s", parameters)
 
     try:
         # Request for ticket creation
         response = app.helpdesk_module.set_ui_ticket(parameters)
-        logger.info("[WebUI-helpdesk] ticket creation result: %s", response)
+        logger.info("ticket creation result: %s", response)
         # ticket = None
         # if app.create_ticket:
         # ticket = app.create_ticket(parameters)
@@ -77,7 +87,7 @@ def create_ticket(name):
 
         return json.dumps(result)
     except Exception:
-        logger.info("[WebUI-helpdesk] ticket creation failed, exception: %s",
+        logger.info("ticket creation failed, exception: %s",
                     traceback.format_exc())
         return json.dumps(result)
 
@@ -90,11 +100,11 @@ def create_ticket_followup():
         app.redirect404()
 
     ticket = int(app.request.query.get('ticket', '0'))
-    logger.info("[WebUI-helpdesk] request to create a ticket follow-up for the ticket #%d", ticket)
+    logger.info("request to create a ticket follow-up for the ticket #%d", ticket)
 
     result = {'status': 405, 'message': "Ticket creation failed", 'ticket': ticket}
     if ticket <= 0:
-        logger.info("[WebUI-helpdesk] ticket follow-up creation failed, no ticket ID!")
+        logger.info("ticket follow-up creation failed, no ticket ID!")
         return json.dumps(result)
 
     app.response.content_type = 'application/json'
@@ -106,12 +116,12 @@ def create_ticket_followup():
         'status': app.request.query.get('status', '1'),
         'content': app.request.query.get('content', 'No data ...')
     }
-    logger.info("[WebUI-helpdesk] request to create a ticket follow-up with %s", parameters)
+    logger.info("request to create a ticket follow-up with %s", parameters)
 
     try:
         # Request for ticket creation
         response = app.helpdesk_module.set_ui_ticket_followup(parameters)
-        logger.info("[WebUI-helpdesk] ticket follow-up creation result: %s", response)
+        logger.info("ticket follow-up creation result: %s", response)
         if response:
             result = {'status': 200, 'message': response_text, 'ticket': response}
 
@@ -120,7 +130,7 @@ def create_ticket_followup():
 
         return json.dumps(result)
     except Exception:
-        logger.info("[WebUI-helpdesk] ticket follow-up creation failed, exception: %s",
+        logger.info("ticket follow-up creation failed, exception: %s",
                     traceback.format_exc())
         return json.dumps(result)
 
@@ -132,9 +142,9 @@ def add_ticket(name):
     if not app.helpdesk_module.is_available():
         app.redirect404()
 
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
-    logger.info("[WebUI-helpdesk] adding a ticket for %s from %s", name, user)
+    logger.info("adding a ticket for %s from %s", name, user)
 
     try:
         itemtype = elt.customs['_ITEMTYPE']
@@ -143,13 +153,13 @@ def add_ticket(name):
 
         # helpdesk_configuration = app.helpdesk_module.get_ui_helpdesk_configuration()
         session = app.helpdesk_module.get_ui_session()
-        logger.info("[WebUI-helpdesk] session: %s", session)
+        logger.info("session: %s", session)
         types = app.helpdesk_module.get_ui_types()
-        logger.info("[WebUI-helpdesk] types: %s", types)
+        logger.info("types: %s", types)
         categories = app.helpdesk_module.get_ui_categories()
-        logger.info("[WebUI-helpdesk] categories: %s", categories)
+        logger.info("categories: %s", categories)
         templates = app.helpdesk_module.get_ui_templates()
-        logger.info("[WebUI-helpdesk] templates: %s", templates)
+        logger.info("templates: %s", templates)
 
         return {
             'elt': elt,
@@ -162,7 +172,7 @@ def add_ticket(name):
             'templates': templates
         }
     except Exception:
-        logger.info("[WebUI-helpdesk] ticket creation is not possible for %s, exception: %s",
+        logger.info("ticket creation is not possible for %s, exception: %s",
                     name, traceback.format_exc())
         return {'name': None}
 
@@ -179,22 +189,22 @@ def add_ticket_followup(name):
 
     # result = {'status': 405, 'message': "Ticket creation failed", 'ticket': ticket}
     if ticket <= 0:
-        logger.info("[WebUI-helpdesk] ticket follow-up creation failed, no ticket ID!")
+        logger.info("ticket follow-up creation failed, no ticket ID!")
         return {'name': None, 'ticket': 0}
 
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
-    logger.info("[WebUI-helpdesk] adding a ticket follow-up to #%d for %s from %s",
+    logger.info("adding a ticket follow-up to #%d for %s from %s",
                 ticket, name, user)
 
     try:
         # helpdesk_configuration = app.helpdesk_module.get_ui_helpdesk_configuration()
         session = app.helpdesk_module.get_ui_session()
-        logger.info("[WebUI-helpdesk] session: %s", session)
+        logger.info("session: %s", session)
 
         return {'elt': elt, 'name': name, 'ticket': ticket, 'status': status}
     except Exception:
-        logger.info("[WebUI-helpdesk] ticket creation is not possible for %s, exception: %s",
+        logger.info("ticket creation is not possible for %s, exception: %s",
                     name, traceback.format_exc())
         return {'name': None}
 
@@ -203,9 +213,9 @@ def get_ticket(name):
     if not app.helpdesk_module.is_available():
         app.redirect404()
 
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
-    logger.info("[WebUI-helpdesk] requesting tickets for %s", name)
+    logger.info("requesting tickets for %s", name)
 
     tickets = app.helpdesk_module.get_ui_tickets(name)
     return {'elt': elt, 'name': name, 'app': app, 'tickets': tickets}
@@ -215,9 +225,9 @@ def get_element_tickets(name):
     if not app.helpdesk_module.is_available():
         app.redirect404()
 
-    user = app.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_element(name, user) or app.redirect404()
-    logger.info("[WebUI-helpdesk] requesting tickets for %s", name)
+    logger.info("requesting tickets for %s", name)
 
     tickets = app.helpdesk_module.get_ui_tickets(name, list_only=False)
     return {
@@ -240,7 +250,7 @@ def get_widget_tickets():
             </center>
         """
 
-    user = app.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     wid = app.request.query.get('wid', 'widget_helpdesk_' + str(int(time.time())))

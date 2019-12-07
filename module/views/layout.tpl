@@ -93,7 +93,6 @@
       <!-- Scripts
       ================================================== -->
       <script src="/static/js/jquery-1.12.0.min.js"></script>
-      <script src="/static/js/shinken-bookmarks.js?v={{app.app_version}}"></script>
    </head>
 
    <body>
@@ -191,7 +190,7 @@
       <script>
       var dashboard_currently = false;
 
-      // Configuration for shinken-actions.js
+      // Configuration for shinken.js
       %user = app.get_user()
       var user='{{ user.alias if hasattr(user, "alias") and user.alias != "none" else user.get_name() }}';
       var g_user_name='{{ user.get_username() }}';
@@ -206,23 +205,16 @@
       <!--
        WebUI scripts ...
       -->
-      %if refresh:
       <script>
       var app_refresh_period = {{app.refresh_period}};
       </script>
-      <script src="/static/js/shinken-refresh.js?v={{app.app_version}}"></script>
-      %end
-      <script src="/static/js/shinken-actions.js?v={{app.app_version}}"></script>
+      <script src="/static/js/shinken.js?v={{app.app_version}}"></script>
 
       %if app.request.get('MSG', None):
       <script>
-      console.log("{{app.request.get('MSG')}}"),
       alertify.log("{{app.request.get('MSG')}}", "error", 5000);;
       </script>
       %end
-
-      <script src="/static/js/shinken-layout.js?v={{app.app_version}}"></script>
-      <script src="/static/js/shinken-tooltip.js?v={{app.app_version}}"></script>
 
       %# Include specific Js files ...
       %for p in js:

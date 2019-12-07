@@ -1,8 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
+import os
 
-from shinken.log import logger
+ALIGNAK = False
+if os.environ.get('ALIGNAK_SHINKEN_UI', None):
+    if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
+        ALIGNAK = True
+
+# pylint: disable=invalid-name
+if ALIGNAK:
+    # Specific logger configuration
+    import logging
+    from alignak.log import ALIGNAK_LOGGER_NAME
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 
 class MetaModule(object):
@@ -32,7 +45,7 @@ class MetaModule(object):
         self.modules = modules
         self.app = app
         if not modules:
-            logger.info("[WebUI] No module for %s. %s", self.__class__.__name__, self._custom_log)
+            logger.info("No module for %s. %s", self.__class__.__name__, self._custom_log)
 
     def is_available(self):
         ''' Is the MetaModule available? Checks if the MetaModule have at least one module. '''
@@ -42,16 +55,16 @@ class MetaModule(object):
     def find_modules(cls, modules):
         ''' Filter the modules and returns only the modules that contains the
             methods listed in `_functions`. '''
-        logger.debug("[WebUI] searching module containing %s", ', '.join(cls._functions))
+        logger.debug("searching module containing %s", ', '.join(cls._functions))
         mods = []
         for mod in modules:
-            logger.debug("[WebUI] searching in module: %s", mod.get_name())
+            logger.debug("searching in module: %s", mod.get_name())
             found = True
             for name in cls._functions:
-                f = getattr(mod, name, None)
-                if not f or not callable(f):
+                fct = getattr(mod, name, None)
+                if not fct or not callable(fct):
                     found = False
             if found:
-                logger.info("[WebUI] Module found: %s", mod.get_name())
+                logger.info("Module found: %s", mod.get_name())
                 mods.append(mod)
         return mods

@@ -31,7 +31,17 @@ import datetime
 
 from config_parser import ConfigParser
 
-from shinken.log import logger
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Get plugin's parameters from configuration file
 params = {
@@ -48,22 +58,22 @@ def _get_logs(*args, **kwargs):
     if app.logs_module.is_available():
         return app.logs_module.get_ui_logs(*args, **kwargs)
 
-    logger.warning("[WebUI-logs] no get history external module defined!")
+    logger.warning("[logs] no get history external module defined!")
     return None
 
 
-# pylint: disable=global-statement
-def load_config(app):
+# pylint: disable=global-statement,unused-argument
+def load_config(the_app):
     global params
 
     currentdir = os.path.dirname(os.path.realpath(__file__))
     configuration_file = "%s/%s" % (currentdir, 'plugin.cfg')
-    logger.info("[WebUI-logs] Plugin configuration file: %s", configuration_file)
+    logger.info("[logs] Plugin configuration file: %s", configuration_file)
     try:
         scp = ConfigParser('#', '=')
-        z = params.copy()
-        z.update(scp.parse_config(configuration_file))
-        params = z
+        tmp = params.copy()
+        tmp.update(scp.parse_config(configuration_file))
+        params = tmp
 
         params['logs_type'] = [item.strip() for item in params['logs_type'].split(',')]
         if params['logs_hosts']:
@@ -71,13 +81,13 @@ def load_config(app):
         if params['logs_services']:
             params['logs_services'] = [item.strip() for item in params['logs_services'].split(',')]
 
-        logger.info("[WebUI-logs] configuration loaded.")
-        logger.info("[WebUI-logs] configuration, fetching types: %s", params['logs_type'])
-        logger.info("[WebUI-logs] configuration, hosts: %s", params['logs_hosts'])
-        logger.info("[WebUI-logs] configuration, services: %s", params['logs_services'])
+        logger.info("[logs] configuration loaded.")
+        logger.info("[logs] configuration, fetching types: %s", params['logs_type'])
+        logger.info("[logs] configuration, hosts: %s", params['logs_hosts'])
+        logger.info("[logs] configuration, services: %s", params['logs_services'])
         return True
     except Exception as exp:
-        logger.warning("[WebUI-logs] configuration file (%s) not available: %s",
+        logger.warning("[logs] configuration file (%s) not available: %s",
                        configuration_file, str(exp))
         return False
 
@@ -93,10 +103,10 @@ def set_hosts_list():
 
     params['logs_hosts'] = []
 
-    hostsList = app.request.forms.getall('hostsList[]')
-    logger.debug("[WebUI-logs] Selected hosts : ")
-    for host in hostsList:
-        logger.debug("[WebUI-logs] - host : %s", host)
+    hosts_list = app.request.forms.getall('hostsList[]')
+    logger.debug("[logs] Selected hosts : ")
+    for host in hosts_list:
+        logger.debug("[logs] - host : %s", host)
         params['logs_hosts'].append(host)
 
     app.bottle.redirect("/logs")
@@ -113,10 +123,10 @@ def set_services_list():
 
     params['logs_services'] = []
 
-    servicesList = app.request.forms.getall('servicesList[]')
-    logger.debug("[WebUI-logs] Selected services : ")
-    for service in servicesList:
-        logger.debug("[WebUI-logs] - service : %s", service)
+    services_list = app.request.forms.getall('servicesList[]')
+    logger.debug("[logs] Selected services : ")
+    for service in services_list:
+        logger.debug("[logs] - service : %s", service)
         params['logs_services'].append(service)
 
     app.bottle.redirect("/logs")
@@ -133,17 +143,17 @@ def set_logs_type_list():
 
     params['logs_type'] = []
 
-    logs_typeList = app.request.forms.getall('logs_typeList[]')
-    logger.debug("[WebUI-logs] Selected logs types : ")
-    for log_type in logs_typeList:
-        logger.debug("[WebUI-logs] - log type : %s", log_type)
+    logs_type_list = app.request.forms.getall('logs_typeList[]')
+    logger.debug("[logs] Selected logs types : ")
+    for log_type in logs_type_list:
+        logger.debug("[logs] - log type : %s", log_type)
         params['logs_type'].append(log_type)
 
     app.bottle.redirect("/logs")
 
 
 def get_history():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     filters = dict()
 
@@ -185,13 +195,13 @@ def get_history():
 
 # :TODO:maethor:171017: This function should be merge in get_history
 def get_global_history():
-    user = app.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     midnight_timestamp = time.mktime(datetime.date.today().timetuple())
     range_start = int(app.request.GET.get('range_start', midnight_timestamp))
     range_end = int(app.request.GET.get('range_end', midnight_timestamp + 86399))
-    logger.debug("[WebUI-logs] get_global_history, range: %d - %d", range_start, range_end)
+    logger.debug("[logs] get_global_history, range: %d - %d", range_start, range_end)
 
     logs = _get_logs(filters={'type': {'$in': params['logs_type']}},
                      range_start=range_start, range_end=range_end)

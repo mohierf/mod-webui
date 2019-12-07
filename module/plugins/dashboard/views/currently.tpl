@@ -443,8 +443,8 @@
 </script>
 %end
 
-%s = app.datamgr.get_services_synthesis(None, user)
-%h = app.datamgr.get_hosts_synthesis(None, user)
+%s = app.datamgr.get_services_synthesis(user=user)
+%h = app.datamgr.get_hosts_synthesis(user=user)
 
 %if not user.is_anonymous():
 <div class="container-fluid">

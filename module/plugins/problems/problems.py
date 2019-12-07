@@ -26,7 +26,7 @@
 import time
 import re
 
-from shinken.misc.sorter import hst_srv_sort, last_state_change_earlier
+# from shinken.misc.sorter import hst_srv_sort, last_state_change_earlier
 
 # Will be populated by the UI with it's own value
 app = None
@@ -37,7 +37,7 @@ def get_page():
 
 
 def get_all():
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
 
     # Update the default filter according to the logged-in user minimum business impact
     default_filtering = app.PROBLEMS_SEARCH_STRING
@@ -75,77 +75,80 @@ def get_all():
     search = app.get_search_string() or ""
     items = list(app.datamgr.search_hosts_and_services(search, user))
 
-    pbs = list(sorted(items, hst_srv_sort))
+    # todo: restore this feature (see Helper class!)
+    # pbs = list(sorted(items, hst_srv_sort))
+    problems = items
 
     if not display_impacts:
         # Remove impacts when source of impact (dependency) is in list
-        for pb in pbs:
-            if pb.impacts:
-                for i in pb.impacts:
-                    if i in pbs and i != pb and i.business_impact <= pb.business_impact:
-                        pbs.remove(i)
+        for problem in problems:
+            if not problem.impacts:
+                continue
+            for i in problem.impacts:
+                if i in problems and i != problem and i.business_impact <= problem.business_impact:
+                    problems.remove(i)
 
     # If we overflow, came back as normal
-    if start > len(pbs):
+    if start > len(problems):
         start = 0
         end = start + step
 
-    navi = app.helper.get_navi(len(pbs), start, step=step)
+    navi = app.helper.get_navi(len(problems), start, step=step)
 
     return {
-        'pbs': pbs[start:end],
-        'problems_search': True if search == default_filtering else False,
+        'pbs': problems[start:end],
+        'problems_search': (search == default_filtering),
         'all_pbs': items,
-        'navi': navi,
         'title': title,
         'bookmarks': app.prefs_module.get_user_bookmarks(user),
         'bookmarksro': app.prefs_module.get_common_bookmarks(),
         'sound': sound_pref,
+        'navi': navi,
         'elts_per_page': elts_per_page,
         'display_impacts': display_impacts
     }
 
 
 def get_pbs_widget():
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
 
     # We want to limit the number of elements, The user will be able to increase it
     nb_elements = max(0, int(app.request.GET.get('nb_elements', '10')))
     refine_search = app.request.GET.get('search', '')
 
-    items = app.datamgr.search_hosts_and_services(app.PROBLEMS_SEARCH_STRING,
-                                                  user)
+    problems = app.datamgr.search_hosts_and_services(app.PROBLEMS_SEARCH_STRING, user)
 
     # Sort it now
-    items.sort(hst_srv_sort)
+    # todo: restore this feature (see Helper class!)
+    # items.sort(hst_srv_sort)
 
     # Ok, if needed, apply the widget refine search filter
     if refine_search:
         # We compile the pattern
         pat = re.compile(refine_search, re.IGNORECASE)
         new_pbs = []
-        for p in items:
-            if pat.search(p.get_full_name()):
-                new_pbs.append(p)
+        for problem in problems:
+            if pat.search(problem.get_full_name()):
+                new_pbs.append(problem)
                 continue
 
             to_add = False
-            for imp in p.impacts:
+            for imp in problem.impacts:
                 if pat.search(imp.get_full_name()):
                     to_add = True
                     continue
 
-            for src in p.source_problems:
+            for src in problem.source_problems:
                 if pat.search(src.get_full_name()):
                     to_add = True
                     continue
 
             if to_add:
-                new_pbs.append(p)
+                new_pbs.append(problem)
 
-        items = new_pbs[:nb_elements]
+        problems = new_pbs[:nb_elements]
 
-    pbs = items[:nb_elements]
+    pbs = problems[:nb_elements]
 
     wid = app.request.query.get('wid', 'widget_problems_' + str(int(time.time())))
     collapsed = (app.request.query.get('collapsed', 'false') == 'true')
@@ -180,25 +183,25 @@ def get_pbs_widget():
         title = 'IT problems (%s)' % refine_search
 
     return {
-        'pbs': pbs, 'all_pbs': items, 'search': refine_search, 'page': 'problems',
+        'pbs': pbs, 'all_pbs': problems, 'search': refine_search, 'page': 'problems',
         'wid': wid, 'collapsed': collapsed, 'options': options, 'base_url': '/widget/problems',
         'title': title, 'header': header, 'commands': commands
     }
 
 
 def get_last_errors_widget():
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
 
     # We want to limit the number of elements, The user will be able to increase it
     nb_elements = max(0, int(app.request.GET.get('nb_elements', '10')))
-    refine_search = app.request.GET.get('search', '')
 
     # Apply search filter if exists ...
     items = app.datamgr.search_hosts_and_services(app.PROBLEMS_SEARCH_STRING,
                                                   user)
 
     # Sort it now
-    items.sort(last_state_change_earlier)
+    # todo: restore this feature (see Helper class!)
+    # items.sort(last_state_change_earlier)
 
     # Keep only nb_elements
     pbs = items[:nb_elements]

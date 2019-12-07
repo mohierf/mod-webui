@@ -6,7 +6,7 @@
 %helper = app.helper
 %h = app.datamgr.get_hosts_synthesis(user=user)
 
-%hide_empty = (getattr(app.modconf, 'plugin.hostgroups.hide_empty', '0') == '1')
+%hide_empty = (app.get_config('plugin.hostgroups.hide_empty', '0') == '1')
 
 <div id="hostsgroups">
    <!-- Progress bar -->
@@ -126,12 +126,12 @@
 
       %even='alt'
       %for group in hostgroups:
-         %if group.has('level') and group.level != level:
+         %if getattr(group, 'level', -1) != level:
          %continue
          %end
 
          %hosts = app.datamgr.search_hosts_and_services('type:host hg:"'+group.get_name()+'"', user)
-         %h = app.datamgr.get_hosts_synthesis(hosts, user=user)
+         %h = app.datamgr.get_hosts_synthesis(items=hosts, user=user)
          %sub_groups = group.hostgroup_members
          %sub_groups = [] if (sub_groups and not sub_groups[0]) else sub_groups
 
@@ -153,7 +153,7 @@
                <a class="btn btn-default btn-xs" href="hosts-groups?level={{int(level+1)}}&parent={{group.get_name()}}" title="View contained groups"><i class="fas fa-angle-double-down"></i></a>
                %end
 
-               %if group.has('level') and group.level > 0:
+               %if getattr(group, 'level', -1) > 0:
                <a class="btn btn-default btn-xs" href="hosts-groups?level={{int(level-1)}}" title="View parent group"><i class="fas fa-angle-double-up"></i></a>
                %end
 
@@ -183,7 +183,7 @@
                <a class="btn btn-default btn-xs" href="hosts-groups?level={{int(level+1)}}&parent={{group.get_name()}}" title="View contained groups"><i class="fas fa-angle-double-down"></i></a>
                %end
 
-               %if group.has('level') and group.level > 0:
+               %if getattr(group, 'level', -1) > 0:
                <a class="btn btn-default btn-xs" href="hosts-groups?level={{int(level-1)}}" title="View parent group"><i class="fas fa-angle-double-up"></i></a>
                %end
 

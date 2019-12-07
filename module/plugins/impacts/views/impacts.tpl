@@ -139,7 +139,7 @@
                         title="Recheck"
                         data-element="{{helper.get_uri_name(pb)}}"
                         >
-                     <i class="fas fa-refresh"></i><span class="hidden-sm hidden-xs"> Refresh</span>
+                     <i class="fas fa-sync"></i><span class="hidden-sm hidden-xs"> Refresh</span>
                   </button>
                   <button class="btn btn-default btn-xs js-submit-ok"
                         title="Submit a check result"

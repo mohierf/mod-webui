@@ -23,20 +23,23 @@
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# pylint: disable=too-few-public-methods
 class ConfigParser(object):
 
-    def __init__(self, comment_char='#', option_char='=', allow_duplicates=False, strip_quotes=True):
+    def __init__(self, comment_char='#', option_char='=',
+                 allow_duplicates=False, strip_quotes=True):
         self.comment_char = comment_char
         self.option_char = option_char
         self.allow_duplicates = allow_duplicates
         self.strip_quotes = strip_quotes
+        self.options = {}
 
     def parse_config(self, filename):
         self.options = {}
         config_file = open(filename)
         for line in config_file:
             if self.comment_char in line:
-                line, comment = line.split(self.comment_char, 1)
+                line, _comment = line.split(self.comment_char, 1)
             if self.option_char in line:
                 option, value = line.split(self.option_char, 1)
                 option = option.strip()

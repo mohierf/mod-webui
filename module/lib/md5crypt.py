@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# pylint: disable=invalid-name
+
 #########################################################
 # md5crypt.py
 #

@@ -1,6 +1,11 @@
 %rebase("layout", css=['logs/css/logs.css','logs/css/sliding_navigation.css','logs/css/bootstrap-multiselect.css'], js=['logs/js/bootstrap-multiselect.js'], title='System logs')
 
+%if alignak:
+%from alignak.version import VERSION
+%fmwk="Alignak"
+%else:
 %from shinken.bin import VERSION
+%end
 %helper = app.helper
 %import time
 %import datetime

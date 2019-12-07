@@ -6,7 +6,7 @@
 %helper = app.helper
 %s = app.datamgr.get_services_synthesis(user=user)
 
-%hide_empty = (getattr(app.modconf, 'plugin.servicegroups.hide_empty', '0') == '1')
+%hide_empty = (app.get_config('plugin.servicegroups.hide_empty', '0') == '1')
 
 <div id="servicesgroups">
    <!-- Progress bar -->
@@ -121,12 +121,12 @@
 
       %even='alt'
       %for group in servicegroups:
-         %if group.has('level') and group.level != level:
+         %if getattr(group, 'level', -1) != level:
          %continue
          %end
 
          %services = app.datamgr.search_hosts_and_services('type:service sg:"'+group.get_name()+'"', user)
-         %s = app.datamgr.get_services_synthesis(services, user=user)
+         %s = app.datamgr.get_services_synthesis(items=services, user=user)
          %sub_groups = group.servicegroup_members
          %sub_groups = [] if (sub_groups and not sub_groups[0]) else sub_groups
 
@@ -148,7 +148,7 @@
                <a class="btn btn-default btn-xs" href="services-groups?level={{int(level+1)}}&parent={{group.get_name()}}" title="View contained groups"><i class="fas fa-angle-double-down"></i></a>
                %end
 
-               %if group.has('level') and group.level > 0:
+               %if getattr(group, 'level', -1) > 0:
                <a class="btn btn-default btn-xs" href="services-groups?level={{int(level-1)}}" title="View parent group"><i class="fas fa-angle-double-up"></i></a>
                %end
 
@@ -178,7 +178,7 @@
                <a class="btn btn-default btn-xs" href="services-groups?level={{int(level+1)}}&parent={{group.get_name()}}" title="View contained groups"><i class="fas fa-angle-double-down"></i></a>
                %end
 
-               %if group.has('level') and group.level > 0:
+               %if getattr(group, 'level', -1) > 0:
                <a class="btn btn-default btn-xs" href="services-groups?level={{int(level-1)}}" title="View parent group"><i class="fas fa-angle-double-up"></i></a>
                %end
 

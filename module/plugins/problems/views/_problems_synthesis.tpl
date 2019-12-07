@@ -3,8 +3,8 @@
 %setdefault('widget', False)
 
 %if header:
-%s = app.datamgr.get_services_synthesis(user=user, elts=all_pbs)
-%h = app.datamgr.get_hosts_synthesis(user=user, elts=all_pbs)
+%s = app.datamgr.get_services_synthesis(user=user, items=all_pbs)
+%h = app.datamgr.get_hosts_synthesis(user=user, items=all_pbs)
 %s_all = app.datamgr.get_services_synthesis(user=user)
 %h_all = app.datamgr.get_hosts_synthesis(user=user)
 

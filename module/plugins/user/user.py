@@ -22,9 +22,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import json
-from shinken.log import logger
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 
 # Will be populated by the UI with it's own value
@@ -38,7 +49,7 @@ def show_pref():
 
 
 def get_pref():
-    user = app.request.environ.get('USER', None)
+    user = app.get_user()
     key = app.request.query.get('key', None)
 
     if not key or not user:
@@ -48,7 +59,7 @@ def get_pref():
 
 
 def get_common_pref():
-    user = app.request.environ.get('USER', None)
+    user = app.get_user()
     key = app.request.query.get('key', None)
 
     if not key or not user:
@@ -58,29 +69,29 @@ def get_common_pref():
 
 
 def save_pref():
-    user = app.request.environ.get('USER', None)
+    user = app.get_user()
     key = app.request.query.get('key', None)
     value = app.request.query.get('value', None)
 
     if key is None or value is None:
         return
 
-    s = json.dumps('{%s: %s}' % (key, value))
-    logger.debug("We will save pref %s=%s, as %s", key, value, s)
+    pref = json.dumps('{%s: %s}' % (key, value))
+    logger.debug("We will save pref %s=%s, as %s", key, value, pref)
 
     app.prefs_module.set_ui_user_preference(user, key, value)
 
 
 def save_common_pref():
-    user = app.request.environ.get('USER', None)
+    user = app.get_user()
     key = app.request.query.get('key', None)
     value = app.request.query.get('value', None)
 
     if key is None or value is None:
         return
 
-    s = json.dumps('{%s: %s}' % (key, value))
-    logger.debug("We will save common pref %s=%s, as %s", key, value, s)
+    pref = json.dumps('{%s: %s}' % (key, value))
+    logger.debug("We will save common pref %s=%s, as %s", key, value, pref)
 
     if user.is_administrator():
         app.prefs_module.set_ui_common_preference(key, value)

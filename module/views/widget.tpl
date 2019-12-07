@@ -22,9 +22,10 @@
 
 <script type="text/javascript">
    var w = {'id': '{{wid}}', 'base_url': '{{base_url}}', 'collapsed': {{collapsed_j}}, 'position': 'widget-place-1', 'options': {}};
-   %for (k, v) in options.iteritems():
-        %value = v.get('value', '')
-        w.options['{{k}}'] = '{{value}}';
+   %for k in options:
+      %v = options[k]
+      %value = v.get('value', '')
+      w.options['{{k}}'] = '{{value}}';
    %end
 
     // save into global widgets array
@@ -34,39 +35,40 @@
         saveWidgets();
     }
 
-    function submit_{{wid}}_form(){
-        var form = document.forms["options-{{wid}}"];
-        var widget = search_widget('{{wid}}');
+   function submit_{{wid}}_form(){
+      var form = document.forms["options-{{wid}}"];
+      var widget = search_widget('{{wid}}');
 
-        // If we can't find the widget, bail out
-        if (widget == -1) {
-            console.error('Cannot find the widget : {{wid}} for saving options!');
-            return;
-        }
+      // If we can't find the widget, bail out
+      if (widget == -1) {
+         console.error('Cannot find the widget : {{wid}} for saving options!');
+         return;
+      }
 
-        %for (k, v) in options.iteritems():
-            %# """ for checkbox, the 'value' is useless, we must look at checked """
-            %if v.get('type', 'text') == 'bool':
-                var v = form.{{k}}.checked;
-            %else:
-                var v = form.{{k}}.value;
-            %end
-            widget.options['{{k}}'] = v;
-        %end
-        // so now we can ask for saving the state :)
-        saveWidgets(function() {
-            // If save is successfull we reload the widget
-            reloadWidget('{{wid}}');
-        });
+      %for k in options:
+         %v = options[k]
+         %value = v.get('value', '')
+         %if v.get('type', 'text') == 'bool':
+            widget.options['{{k}}'] = form.{{k}}.checked;
+         %else:
+            widget.options['{{k}}'] = form.{{k}}.value;
+         %end
+      %end
 
-        // Prevent the form to be actually sent.
-        return false;
-    }
+      // so now we can ask for saving the state :)
+      saveWidgets(function() {
+         // If save is successfull we reload the widget
+         reloadWidget('{{wid}}');
+      });
+
+      // Prevent the form to be actually sent.
+      return false;
+   }
 </script>
 
 %editable = 'editable'
-%if len(options) == 0:
-    %editable = ''
+%if not options:
+   %editable = ''
 %end
 
 <div class="widget movable collapsable removable {{editable}} closeconfirm {{collapsed_s}}" id="{{wid}}">
@@ -76,7 +78,8 @@
     </div>
     <div class="widget-editbox">
         <form name="options-{{wid}}" class="well" role="form" onsubmit="return submit_{{wid}}_form();">
-            %for (k, v) in options.iteritems():
+             %for k in options:
+                %v = options[k]
                 %value = v.get('value', '')
                 %label = v.get('label', k)
                 %t = v.get('type', 'text')

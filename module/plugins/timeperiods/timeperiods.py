@@ -30,7 +30,7 @@ app = None
 
 # All timeperiods
 def show_timeperiods():
-    user = app.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     return {'timeperiods': app.datamgr.get_timeperiods()}

@@ -37,7 +37,7 @@ def show_stag(name):
 
 
 def show_htags():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     fake_htags = []
     for tag in app.datamgr.get_host_tags():
@@ -49,7 +49,7 @@ def show_htags():
 
 
 def show_stags():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     fake_stags = []
     for tag in app.datamgr.get_service_tags():

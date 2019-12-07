@@ -11,7 +11,7 @@
     <li> <a href="#" class="js-recheck" title="Launch the defined check command for this {{elt_type}}"
         data-placement="right"
         data-element="{{helper.get_uri_name(elt)}}" >
-        <i class="fas fa-refresh"></i> <span class="hidden-xs">Recheck</span>
+        <i class="fas fa-sync"></i> <span class="hidden-xs">Recheck</span>
     </a> </li>
     %if (elt.passive_checks_enabled):
     <li> <a href="#" class="js-submit-ok" title="Set this {{elt_type}} as ok"

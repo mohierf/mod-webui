@@ -29,7 +29,7 @@ app = None
 
 # All commands
 def show_commands():
-    user = app.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     return {'commands': sorted(app.datamgr.get_commands(), key=lambda c: c.command_name)}

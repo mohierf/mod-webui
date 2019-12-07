@@ -34,48 +34,48 @@ def _graph(logs):
     groups_hour = groupby(reversed(logs), key=lambda x: (x['time'] - (x['time'] % 3600)))
 
     data = OrderedDict()
-    for k, v in groups_hour:
+    for key, value in groups_hour:
         # Filling voids with zeros
         if data:
-            while next(reversed(data)) < (k - 3600):
+            while next(reversed(data)) < (key - 3600):
                 data[next(reversed(data)) + 3600] = 0
-        data[k] = len(list(v))
+        data[key] = len(list(value))
 
     # Smooth graph
-    avg = sum(data.values()) / len(data.values())
-    variance = sum([(v - avg)**2 for v in data.values()]) / len(data.values())
+    avg = sum(data.values()) / len(list(data.values()))
+    variance = sum([(v - avg)**2 for v in list(data.values())]) / len(list(data.values()))
     deviation = variance**0.5
 
     # Remove every value that is 3 times out of standard deviation
-    for k, v in data.items():
-        if v > (avg + deviation * 3):
-            data[k] = avg
+    for key, value in list(data.items()):
+        if value > (avg + deviation * 3):
+            data[key] = avg
 
     # Remove every value that is out of standard deviation and more than two times previous value
-    for k, v in data.items():
-        if k - 3600 in data and k + 3600 in data:
-            if v > (avg + deviation) and v > (2 * data[k - 3600]):
-                data[k] = (data[k - 3600] + data[k + 3600]) / 2
+    for key, value in list(data.items()):
+        if key - 3600 in data and key + 3600 in data:
+            if value > (avg + deviation) and value > (2 * data[key - 3600]):
+                data[key] = (data[key - 3600] + data[key + 3600]) / 2
 
     if datetime.fromtimestamp(logs[-1]['time']) < (datetime.now() - timedelta(7)):
         # Group by 24h
         data_24 = OrderedDict()
-        for k, v in data.items():
-            t = (k - k % (3600 * 24))
-            if t not in data_24:
-                data_24[t] = 0
-            data_24[t] += v
+        for key, value in list(data.items()):
+            the_time = (key - key % (3600 * 24))
+            if the_time not in data_24:
+                data_24[the_time] = 0
+            data_24[the_time] += value
         data = data_24
 
     # Convert timestamp to milliseconds
     # Convert timestamp ms to s
-    graph = [{'t': k * 1000, 'y': v} for k, v in data.items()]
+    graph = [{'t': k * 1000, 'y': v} for k, v in list(data.items())]
 
     return graph
 
 
 def get_global_stats():
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     days = int(app.request.GET.get('days', 30))
@@ -92,10 +92,10 @@ def get_global_stats():
     hosts = Counter()
     services = Counter()
     hostsservices = Counter()
-    for l in logs:
-        hosts[l['host_name']] += 1
-        services[l['service_description']] += 1
-        hostsservices[l['host_name'] + '/' + l['service_description']] += 1
+    for log in logs:
+        hosts[log['host_name']] += 1
+        services[log['service_description']] += 1
+        hostsservices[log['host_name'] + '/' + log['service_description']] += 1
     return {
         'hosts': hosts,
         'services': services,
@@ -106,7 +106,7 @@ def get_global_stats():
 
 
 def get_service_stats(name):
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     days = int(app.request.GET.get('days', 30))
@@ -122,13 +122,13 @@ def get_service_stats(name):
         limit=None))
 
     hosts = Counter()
-    for l in logs:
-        hosts[l['host_name']] += 1
+    for log in logs:
+        hosts[log['host_name']] += 1
     return {'service': name, 'hosts': hosts, 'days': days}
 
 
 def get_host_stats(name):
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
     days = int(app.request.GET.get('days', 30))
@@ -144,8 +144,8 @@ def get_host_stats(name):
         limit=None))
 
     services = Counter()
-    for l in logs:
-        services[l['service_description']] += 1
+    for log in logs:
+        services[log['service_description']] += 1
     return {'host': name, 'services': services, 'days': days}
 
 

@@ -6,11 +6,11 @@
 %search_string = app.get_search_string()
 
 %# Specific content for breadrumb
-%rebase("layout", title='Minemap for hosts/services', css=['minemap/css/minemap.css'], js=['minemap/js/jquery.floatThead.min.js'], breadcrumb=[ ['Minemap', '/minemap'] ])
+%rebase("layout", title='Minemap for hosts/services', css=['minemap/css/minemap.css'], js=['minemap/js/jquery.floatThead.min.js'], breadcrumb=[ ['Minemap', '/minemap'] ], navi=navi, elts_per_page=elts_per_page, page='/minemap')
 
 
 <div id="minemap">
-   %if not items:
+   %if not rows:
       <center>
          %if search_string:
          <h3>Bummer, we couldn't find anything.</h3>
@@ -20,29 +20,6 @@
          %end
       </center>
    %else:
-      %#rows and columns will contain, respectively, all different hosts and all different services ...
-      %rows = []
-      %columns = []
-
-      %# items is a list of hosts
-      %for host in items:
-          %rows.append(host.get_name())
-          %for s in host.services:
-             %if s.service_description not in columns:
-                %columns.append(s.service_description)
-             %end
-          %end
-      %end
-      %#rows.sort()
-      %try:
-      %# For Python < 2.7 ...
-      %import collections
-      %columns = collections.Counter(columns)
-      %columns = [c for c, i in columns.most_common()]
-      %except:
-      %pass
-      %end
-
       <!-- Problems synthesis -->
       %s = app.datamgr.get_services_synthesis(user=user)
       %h = app.datamgr.get_hosts_synthesis(user=user)
@@ -110,6 +87,7 @@
                         {{h.get_name() if h.display_name == '' else h.display_name}}
                      </a>
                   </td>
+
                   %for c in columns:
                      %s = app.datamgr.get_service(r, c, user)
                      %if s:

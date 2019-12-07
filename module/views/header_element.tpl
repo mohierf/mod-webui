@@ -137,7 +137,7 @@
       <li role="separator" class="divider hidden-sm"></li>
 
       <li class="hidden-sm">
-         <a class="btn btn-ico" href="/dashboard/currently" title="Dashboard currently">
+         <a class="btn btn-ico" href="/currently" title="Dashboard currently">
             <i class="fas fa-eye"></i>
          </a>
       </li>
@@ -234,6 +234,12 @@
           <ul class="nav nav-second-level">
             <li> <a href="{{ app.get_url('System') }}"> <i class="fas fa-fw fa-heartbeat sidebar-icon"></i>
                &nbsp;Status </a> </li>
+            %if alignak:
+            <li> <a href="{{ app.get_url('AlignakStatus') }}"> <i class="fa fa-fw fa-heartbeat sidebar-icon"></i>
+               &nbsp;Live state</a> </li>
+            <li> <a href="{{ app.get_url('AlignakEvents') }}"> <i class="fa fa-fw fa-th-list sidebar-icon"></i>
+               &nbsp;Events log</a> </li>
+            %end
             %if app.logs_module.is_available():
             <li> <a href="{{ app.get_url('History') }}"> <i class="fas fa-fw fa-th-list sidebar-icon"></i>
                &nbsp;Logs </a> </li>
@@ -245,8 +251,13 @@
         <li> <a href="#" aria-expanded="false"><i class="fas fa-fw fa-wrench sidebar-icon"></i>
         &nbsp;Configuration<i class="fa arrow"></i></a>
           <ul class="nav nav-second-level">
+            %if alignak:
+            <li> <a href="{{ app.get_url('AlignakParameters') }}"> <i class="fas fa-fw fa-cogs sidebar-icon"></i>
+               &nbsp;Parameters </a> </li>
+            %else:
             <li> <a href="{{ app.get_url('Parameters') }}"> <i class="fas fa-fw fa-cogs sidebar-icon"></i>
                &nbsp;Parameters </a> </li>
+            %end
             <li> <a href="{{ app.get_url('Contacts') }}"> <i class="fas fa-fw fa-user sidebar-icon"></i>
                &nbsp;Contacts </a> </li>
             <li> <a href="{{ app.get_url('ContactsGroups') }}"> <i class="fas fa-fw fa-users sidebar-icon"></i>

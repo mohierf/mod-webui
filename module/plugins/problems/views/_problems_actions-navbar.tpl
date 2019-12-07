@@ -44,8 +44,8 @@
        <i class="fas fa-share"></i>
      </button>
    </li>
-   %s = app.datamgr.get_services_synthesis(user=user, elts=all_pbs)
-   %h = app.datamgr.get_hosts_synthesis(user=user, elts=all_pbs)
+   %s = app.datamgr.get_services_synthesis(user=user, items=all_pbs)
+   %h = app.datamgr.get_hosts_synthesis(user=user, items=all_pbs)
    %if s and s['nb_ack']:
    <li>
      <button class="btn btn-ico btn-action js-remove-acknowledge" title="Remove all acknowledges">

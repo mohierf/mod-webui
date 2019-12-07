@@ -22,12 +22,24 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
+import os
 import time
 import json
 import random
 
 import requests
-from shinken.log import logger
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -42,64 +54,64 @@ def proxy_graph():
     url = app.request.GET.get('url', '')
 
     try:
-        r = requests.get(url)
-        if r.status_code != 200:
-            logger.error("[WebUI-graph] Image URL not found: %d - %s", r.status_code, url)
-            app.bottle.response.status = r.status_code
+        request = requests.get(url)
+        if request.status_code != 200:
+            logger.error("[graph] Image URL not found: %d - %s", request.status_code, url)
+            app.bottle.response.status = request.status_code
             app.bottle.response.content_type = 'application/json'
             return json.dumps(
-                {'status': 'ko', 'message': r.content}
+                {'status': 'ko', 'message': request.content}
             )
 
-    except Exception as e:
-        logger.error("[WebUI-graph] exception: %s", str(e))
+    except Exception as exp:
+        logger.error("[graph] exception: %s", str(exp))
         app.bottle.response.status = 409
         app.bottle.response.content_type = 'application/json'
         return json.dumps(
-            {'status': 'ko', 'message': str(e)}
+            {'status': 'ko', 'message': str(exp)}
         )
 
-    app.response.content_type = str(r.headers['content-type'])
+    app.response.content_type = str(request.headers['content-type'])
     app.response.set_header("Cache-Control", "public, max-age=300")
-    return r.content
+    return request.content
 
 
 def get_service_graphs(host_name, service):
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_service(host_name, service, user) or app.redirect404()
-    s = ""
+    html_string = ""
     if app.graphs_module.is_available():
         graphs = app.graphs_module.get_graph_uris(elt, duration=12 * 3600)
-        for g in graphs:
-            s += "<p><img src='%s' width='600px'></p>" % g['img_src']
+        for graph in graphs:
+            html_string += "<p><img src='%s' width='600px'></p>" % graph['img_src']
 
     app.response.set_header("Cache-Control", "public, max-age=60")
-    return s
+    return html_string
 
 
 def get_host_graphs(host_name):
-    user = app.bottle.request.environ['USER']
+    user = app.get_user()
     elt = app.datamgr.get_host(host_name, user) or app.redirect404()
-    s = ""
+    html_string = ""
     if app.graphs_module.is_available():
         graphs = app.graphs_module.get_graph_uris(elt, duration=12 * 3600)
-        for g in graphs:
-            s += "<p><img src='%s' width='600px'></p>" % g['img_src']
+        for graph in graphs:
+            html_string += "<p><img src='%s' width='600px'></p>" % graph['img_src']
 
     app.response.set_header("Cache-Control", "public, max-age=60")
-    return s
+    return html_string
 
 
 # Our page
 def get_graphs_widget():
-    user = app.request.environ['USER']
+    user = app.get_user()
     # Graph URL may be: http://192.168.0.42/render/?width=320&height=240&fontSize=8&
     # lineMode=connected&from=04:57_20151203&until=04:57_20151204&tz=Europe/Paris&
     # title=Outlook_Web_Access/ - rta&target=alias(color(Outlook_Web_Access.rta,"green"),"rta")&
     # target=alias(color(constantLine(1000),"orange"),"Warning")&
     # target=alias(color(constantLine(3000),"red"),"Critical")
     url = app.request.GET.get('url', '')
-    logger.debug("[WebUI-graph] graph URL: %s", url)
+    logger.debug("[graph] graph URL: %s", url)
 
     if not url:
         search = app.request.GET.get('search', '') or app.datamgr.get_hosts(user)[0].host_name
@@ -144,12 +156,10 @@ def get_graphs_widget():
     if search:
         title = 'Element graphs for %s (%s)' % (search, duration_list[str(duration)])
 
-    graphsId = "graphs_%d" % random.randint(1, 9999)
-
     return {
         'elt': elt,
         'wid': wid,
-        'graphsId': graphsId,
+        'graphsId': "graphs_%d" % random.randint(1, 9999),
         'collapsed': collapsed,
         'options': options,
         'base_url': '/widget/graphs',

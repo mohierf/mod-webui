@@ -4,7 +4,7 @@
 %datamgr = app.datamgr
 %search_string = app.get_search_string()
 
-%rebase("layout", title=title, js=['js/jquery.sparkline.min.js', 'js/shinken-charts.js', 'problems/js/problems.js'], css=['problems/css/problems.css'], navi=navi, page="/all", elts_per_page=elts_per_page)
+%rebase("layout", title=title, js=['js/jquery.sparkline.min.js', 'problems/js/problems.js'], css=['problems/css/problems.css'], navi=navi, page="/all", elts_per_page=elts_per_page)
 
 <script type="text/javascript">
    var actions_enabled = {{'true' if app.can_action() else 'false'}};
@@ -82,7 +82,7 @@
             %end
             <tr data-toggle="collapse" data-target="#details-{{helper.get_html_id(pb)}}" data-item="{{helper.get_uri_name(pb)}}" class="accordion-toggle js-select-elt collapsed">
              <td title="{{pb.get_name()}} - {{pb.state}}
-Since {{helper.print_date(pb.last_state_change, format="%d %b %Y %H:%M:%S")}}
+Since {{helper.print_date(pb.last_state_change, dt_format="%d %b %Y %H:%M:%S")}}
 
 Last check <strong>{{helper.print_duration(pb.last_chk)}}</strong>
 Next check <strong>{{helper.print_duration(pb.next_chk)}}</strong>

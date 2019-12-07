@@ -22,9 +22,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import json
-from shinken.log import logger
+
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -33,25 +44,25 @@ app = None
 def lookup():
     app.response.content_type = 'application/json'
 
-    query = app.request.GET.get('q', '')
-    name = query
-    user = app.request.environ['USER']
+    name = app.request.GET.get('q', '')
+    user = app.get_user()
 
-    logger.debug("[WebUI] lookup: %s", name)
+    logger.debug("lookup: %s", name)
 
+    result = []
     if '/' in name:
-        logger.debug("[WebUI] lookup services for %s", name)
+        logger.debug("lookup services for %s", name)
         splitted = name.split('/')
         hname = splitted[0]
         filtered_services = app.datamgr.get_host_services(hname, user)
         snames = ("%s/%s" % (hname, s.service_description) for s in filtered_services)
-        r = [n for n in snames]
+        result = [n for n in snames]
     else:
         filtered_hosts = app.datamgr.get_hosts(user)
         hnames = (h.host_name for h in filtered_hosts)
-        r = [n for n in hnames if name in n]
+        result = [n for n in hnames if name in n]
 
-    return json.dumps(r)
+    return json.dumps(result)
 
 
 pages = {

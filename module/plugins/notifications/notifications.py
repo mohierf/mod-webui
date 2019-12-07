@@ -31,7 +31,7 @@ def notification_toggle():
     wid = app.request.query.get('wid', 'widget_notification_toggle')
     collapsed = (app.request.query.get('collapsed', 'False') == 'True')
 
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     return {
         'title': 'Notification Toggle',

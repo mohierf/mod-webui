@@ -18,13 +18,23 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
-
+import os
 import time
 import re
 import json
 import random
 
-from shinken.log import logger
+# Check if Alignak is installed
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
+
+# Alignak / Shinken base module are slightly different
+if ALIGNAK:
+    # Specific logger configuration
+    from alignak.log import logging, ALIGNAK_LOGGER_NAME
+
+    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
+else:
+    from shinken.log import logger
 
 # Will be populated by the UI with it's own value
 app = None
@@ -35,10 +45,11 @@ params = {}
 
 # Hook called by WebUI module once the plugin is loaded ...
 # pylint: disable=global-statement
-def load_config(app):
+def load_config(the_app):
     global params
 
-    logger.info("[WebUI-worldmap] loading configuration ...")
+    logger.info("loading configuration ...")
+    logger.info("app configuration: %s", the_app.c)
 
     properties = {
         'worldmap-zoom': '{"default_zoom": 16}',
@@ -49,48 +60,51 @@ def load_config(app):
         'worldmap-layer': '{"layer": ""}',
     }
 
-    for p, default in properties.items():
-        params.update(json.loads(app.prefs_module.get_ui_common_preference(p, default)))
+    for prop, default in list(properties.items()):
+        params.update(json.loads(the_app.prefs_module.get_ui_common_preference(prop, default)))
 
-    logger.info("[WebUI-worldmap] configuration loaded.")
-    logger.info("[WebUI-worldmap] configuration, params: %s", params)
+    logger.info("configuration loaded.")
+    logger.info("configuration, params: %s", params)
 
 
 def search_hosts_with_coordinates(search, user):
-    logger.debug("[WebUI-worldmap] search parameters '%s'", search)
-    items = app.datamgr.search_hosts_and_services(search, user)
+    if "type:host" not in search:
+        search = "type:host " + search
+
+    logger.debug("worldmap, search parameters '%s'", search)
+    hosts = app.datamgr.search_hosts_and_services(search, user)
 
     # We are looking for hosts with valid GPS coordinates,
     # and we just give them to the template to print them.
     # :COMMENT:maethor:150810: If you want default coordinates, just put them
     # in the 'generic-host' template.
     valid_hosts = []
-    for h in items:
-        logger.debug("[WebUI-worldmap] found host '%s'", h.get_name())
+    for host in hosts:
+        logger.debug("found host '%s'", host.get_name())
 
-        if h.business_impact not in params['hosts_level']:
+        if host.business_impact not in params['hosts_level']:
             continue
 
         try:
-            _lat = float(h.customs.get('_LOC_LAT', None))
-            _lng = float(h.customs.get('_LOC_LNG', None))
+            _lat = float(host.customs.get('_LOC_LAT', None))
+            _lng = float(host.customs.get('_LOC_LNG', None))
             # lat/long must be between -180/180
             if not (-180 <= _lat <= 180 and -180 <= _lng <= 180):
                 raise Exception()
         except Exception:
-            logger.debug("[WebUI-worldmap] host '%s' has invalid GPS coordinates", h.get_name())
+            logger.debug("host '%s' has invalid GPS coordinates", host.get_name())
             continue
 
-        logger.debug("[WebUI-worldmap] host '%s' located on worldmap: %f - %f",
-                     h.get_name(), _lat, _lng)
-        valid_hosts.append(h)
+        logger.debug("host '%s' located on worldmap: %f - %f",
+                     host.get_name(), _lat, _lng)
+        valid_hosts.append(host)
 
     return valid_hosts
 
 
 # Our page. If the user call /worldmap
 def show_worldmap():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     # Apply search filter if exists ...
     search = app.request.query.get('search', "type:host")
@@ -102,14 +116,13 @@ def show_worldmap():
 
 
 def show_worldmap_widget():
-    user = app.request.environ['USER']
+    user = app.get_user()
 
     wid = app.request.query.get('wid', 'widget_worldmap_' + str(int(time.time())))
     collapsed = (app.request.query.get('collapsed', 'False') == 'True')
 
     # We want to limit the number of elements, The user will be able to increase it
     nb_elements = max(0, int(app.request.query.get('nb_elements', '10')))
-    refine_search = app.request.query.get('search', '')
 
     # Apply search filter if exists ...
     search = app.request.query.get('search', "type:host")
@@ -117,6 +130,7 @@ def show_worldmap_widget():
     items = search_hosts_with_coordinates(search, user)
 
     # Ok, if needed, apply the widget refine search filter
+    refine_search = app.request.query.get('search', '')
     if refine_search:
         pat = re.compile(refine_search, re.IGNORECASE)
         items = [i for i in items if pat.search(i.get_full_name())]
@@ -140,13 +154,15 @@ def show_worldmap_widget():
     if refine_search:
         title = 'Worldmap (%s)' % refine_search
 
-    mapId = "map_%d" % random.randint(1, 9999)
-
     return {
-        'wid': wid, 'mapId': mapId,
-        'collapsed': collapsed, 'options': options,
-        'base_url': '/widget/worldmap', 'title': title,
-        'params': params, 'hosts': items
+        'wid': wid,
+        'mapId': "map_%d" % random.randint(1, 9999),
+        'collapsed': collapsed,
+        'options': options,
+        'base_url': '/widget/worldmap',
+        'title': title,
+        'params': params,
+        'hosts': items
     }
 
 
