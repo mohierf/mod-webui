@@ -476,7 +476,7 @@ class WebuiBroker(BaseModule, Daemon):
         """
         return self.rg.want_brok(b)
 
-    # pylint: disable=access-member-before-definition
+    # pylint: disable=access-member-before-definition, unused-argument
     def manage_signal(self, sig, frame):
         """Generic function to handle signals
         Only called when the module process received SIGINT or SIGKILL. Note that
