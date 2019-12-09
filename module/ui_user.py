@@ -36,6 +36,8 @@ if ALIGNAK:
     logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
 
     from alignak.objects.contact import Contact
+    from alignak.objects.host import Host
+    from alignak.objects.service import Service
 else:
     from shinken.log import logger
 
@@ -68,7 +70,7 @@ class User(Contact):
 
         return getattr(self, 'name', 'Unnamed')
 
-    def get_name(self, index=False):
+    def get_name(self, index=False):  # pylint: disable=unused-argument
         name = self.get_username()
         if getattr(self, 'realname', None):
             name = "%s %s" % (getattr(self, 'firstname'), getattr(self, 'realname'))
@@ -155,9 +157,9 @@ class User(Contact):
         # May be it's a contact of a linked item
         if item.__class__.my_type == 'hostgroup':
             for host in item.get_hosts():
-                # if not isinstance(host, Host):
-                #     logger.error("[WebUI - relation], host is only an host name! %s", host)
-                #     continue
+                if not isinstance(host, Host):
+                    logger.error("[WebUI - relation], host is only an host name! %s", host)
+                    continue
                 for contact in host.contacts:
                     if contact.contact_name == self.contact_name:
                         logger.debug("[WebUI - relation], user is a contact through an hostgroup")

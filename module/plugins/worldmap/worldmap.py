@@ -21,7 +21,6 @@
 import os
 import time
 import re
-import json
 import random
 
 # Check if Alignak is installed

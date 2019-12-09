@@ -36,21 +36,13 @@ import re
 
 from collections import OrderedDict
 
-ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
-
 # pylint: disable=invalid-name
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 if ALIGNAK:
-    # Specific logger configuration
-    import logging
-    from alignak.log import ALIGNAK_LOGGER_NAME
-    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
-
     # from alignak.misc.sorter import hst_srv_sort
     from alignak.misc.perfdata import PerfDatas
     from alignak.macroresolver import MacroResolver
 else:
-    from shinken.log import logger
-
     # from shinken.misc.sorter import hst_srv_sort
     from shinken.misc.perfdata import PerfDatas
     from shinken.macroresolver import MacroResolver
@@ -738,11 +730,11 @@ class Helper(object):
             html += self.get_link(node, short=True)
             if node.business_impact > 2:
                 html += "(" + self.get_business_impact_text(node.business_impact) + ")"
-            html += """ is <span class="font-%s"><strong>%s</strong></span>""" \
-                    % (node.state.lower(), node.state)
-            html += """ since <span title="%s">%s""" \
-                 % (time.strftime("%d %b %Y %H:%M:%S", time.localtime(node.last_state_change)),
-                    self.print_duration(node.last_state_change, just_duration=True, x_elts=2))
+            html += """ is <span class="font-%s"><strong>%s</strong></span>""" % (
+                node.state.lower(), node.state)
+            html += """ since <span title="%s">%s""" % (
+                time.strftime("%d %b %Y %H:%M:%S", time.localtime(node.last_state_change)),
+                self.print_duration(node.last_state_change, just_duration=True, x_elts=2))
 
         # If we got no parents, no need to print the expand icon
         if fathers:
@@ -763,7 +755,7 @@ class Helper(object):
             # If we are the root, we already got this
             if level != 0:
                 html += '<a class="pull-right toggle-list" data-state="%s" data-target="bp-%s">' \
-                     '<i class="fas fa-%s"></i></a>' % (list_state, self.make_html_id(name), icon)
+                        '<i class="fas fa-%s"></i></a>' % (list_state, self.make_html_id(name), icon)
 
             html += """<ul class="list-group" name="bp-%s" style="display: %s;">""" \
                     % (self.make_html_id(name), display)
@@ -961,9 +953,10 @@ class Helper(object):
         # For host, the order is UP, UNREACH, DOWN
         # For service: OK, UNKNOWN, WARNING, CRIT
         # And DOWN is before CRITICAL (potential more impact)
-        tab = {'host': {0: 0, 1: 4, 2: 1},
-               'service': {0: 0, 1: 2, 2: 3, 3: 1}
-               }
+        tab = {
+            'host': {0: 0, 1: 4, 2: 1},
+            'service': {0: 0, 1: 2, 2: 3, 3: 1}
+        }
         state1 = tab[svc1.__class__.my_type].get(svc1.state_id, 0)
         state2 = tab[svc2.__class__.my_type].get(svc2.state_id, 0)
         # ok, here, same business_impact
@@ -985,9 +978,10 @@ class Helper(object):
         # For host, the order is UP, UNREACH, DOWN
         # For service: OK, UNKNOWN, WARNING, CRIT
         # And DOWN is before CRITICAL (potential more impact)
-        tab = {'host': {0: 0, 1: 4, 2: 1},
-               'service': {0: 0, 1: 2, 2: 3, 3: 1}
-               }
+        tab = {
+            'host': {0: 0, 1: 4, 2: 1},
+            'service': {0: 0, 1: 2, 2: 3, 3: 1}
+        }
         state1 = tab[svc1.__class__.my_type].get(svc1.state_id, 0)
         state2 = tab[svc2.__class__.my_type].get(svc2.state_id, 0)
 

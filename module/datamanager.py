@@ -32,12 +32,8 @@ import re
 import itertools
 import time
 
-ALIGNAK = False
-if os.environ.get('ALIGNAK_SHINKEN_UI', None):
-    if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
-        ALIGNAK = True
-
 # pylint: disable=invalid-name
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 if ALIGNAK:
     # Specific logger configuration
     import logging
@@ -45,20 +41,6 @@ if ALIGNAK:
     logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
 else:
     from shinken.log import logger
-
-# from alignak.misc.datamanager import DataManager
-
-# # Import all objects we will need
-# from alignak.objects.host import Host, Hosts
-# from alignak.objects.hostgroup import Hostgroup, Hostgroups
-# from alignak.objects.service import Service, Services
-# from alignak.objects.servicegroup import Servicegroup, Servicegroups
-# from alignak.objects.contact import Contact, Contacts
-# from alignak.objects.contactgroup import Contactgroup, Contactgroups
-# from alignak.objects.notificationway import NotificationWay, NotificationWays
-# from alignak.objects.timeperiod import Timeperiod, Timeperiods
-# from alignak.objects.command import Command, Commands
-# # from alignak.misc.sorter import last_state_change_earlier
 
 
 class WebUIDataManager(object):
@@ -169,9 +151,9 @@ class WebUIDataManager(object):
             host_synth['nb_' + state] = sum(1 for host in hosts if host.state == state.upper())
             host_synth['pct_' + state] = round(100.0 * host_synth['nb_' + state] / host_synth['nb_elts'], 1)
         for state in ['down', 'unreachable', 'unknown']:
-            host_synth['nb_' + state] = sum(1 for host in hosts if host.state == state.upper()
-                                      and not (host.problem_has_been_acknowledged
-                                               or host.in_scheduled_downtime))
+            host_synth['nb_' + state] = sum(
+                1 for host in hosts if host.state == state.upper()
+                and not (host.problem_has_been_acknowledged or host.in_scheduled_downtime))
             host_synth['pct_' + state] = round(100.0 * host_synth['nb_' + state] / host_synth['nb_elts'], 1)
 
         # Our own computation !
@@ -201,18 +183,25 @@ class WebUIDataManager(object):
                     if host.is_impact:
                         host_synth['nb_impacts'] += 1
         else:
-            host_synth['nb_problems'] = sum(1 for host in hosts if host.is_problem
-                                      and not host.problem_has_been_acknowledged)
-            host_synth['nb_impacts'] = sum(1 for host in hosts if host.is_problem
-                                     and not host.problem_has_been_acknowledged
-                                     and host.is_impact)
-            host_synth['nb_ack'] = sum(1 for host in hosts if host.is_problem
-                                 and host.problem_has_been_acknowledged)
+            host_synth['nb_problems'] = sum(
+                1 for host in hosts if host.is_problem
+                and not host.problem_has_been_acknowledged)
+            host_synth['nb_impacts'] = sum(
+                1 for host in hosts if host.is_problem
+                and not host.problem_has_been_acknowledged
+                and host.is_impact)
+            host_synth['nb_ack'] = sum(
+                1 for host in hosts if host.is_problem
+                and host.problem_has_been_acknowledged)
 
-        host_synth['pct_problems'] = round(100.0 * host_synth['nb_problems'] / host_synth['nb_elts'], 1)
-        host_synth['pct_ack'] = round(100.0 * host_synth['nb_ack'] / host_synth['nb_elts'], 1)
-        host_synth['nb_downtime'] = sum(1 for host in hosts if host.in_scheduled_downtime)
-        host_synth['pct_downtime'] = round(100.0 * host_synth['nb_downtime'] / host_synth['nb_elts'], 1)
+        host_synth['pct_problems'] = \
+            round(100.0 * host_synth['nb_problems'] / host_synth['nb_elts'], 1)
+        host_synth['pct_ack'] = \
+            round(100.0 * host_synth['nb_ack'] / host_synth['nb_elts'], 1)
+        host_synth['nb_downtime'] = \
+            sum(1 for host in hosts if host.in_scheduled_downtime)
+        host_synth['pct_downtime'] = \
+            round(100.0 * host_synth['nb_downtime'] / host_synth['nb_elts'], 1)
 
         logger.debug("[datamanager] get_hosts_synthesis: %s", host_synth)
         return host_synth
@@ -518,8 +507,8 @@ class WebUIDataManager(object):
                     logger.debug("[datamanager] found the group: %s", group.get_name())
                     # This filters items that are related with the hostgroup only
                     # if the item has an hostgroups property
-                    items = [i for i in items if getattr(i, 'get_hostgroups') and
-                             group.get_name() in [g.get_name() for g in i.get_hostgroups()]]
+                    items = [i for i in items if getattr(i, 'get_hostgroups')
+                             and group.get_name() in [g.get_name() for g in i.get_hostgroups()]]
 
             if (t in ['sg', 'sgroup', 'servicegroup']) and s.lower() != 'all':
                 logger.debug("[datamanager] searching for items in the servicegroup %s", s)
@@ -527,8 +516,8 @@ class WebUIDataManager(object):
                 if group:
                     logger.debug("[datamanager] found the group: %s", group.get_name())
                     # Only the items that have a servicegroups property
-                    items = [i for i in items if getattr(i, 'servicegroups') and
-                             group.get_name() in [g.get_name() for g in i.servicegroups]]
+                    items = [i for i in items if getattr(i, 'servicegroups')
+                             and group.get_name() in [g.get_name() for g in i.servicegroups]]
 
             if (t in ['cg', 'cgroup', 'contactgroup']) and s.lower() != 'all':
                 logger.debug("[datamanager] searching for items related with the contactgroup %s",

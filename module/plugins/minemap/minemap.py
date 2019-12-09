@@ -34,7 +34,6 @@ else:
     from shinken.log import logger
 
 
-
 # Will be populated by the UI with it's own value
 app = None
 

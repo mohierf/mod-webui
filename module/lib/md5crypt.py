@@ -73,7 +73,6 @@ def unix_md5_crypt(pw, salt, magic=None):
         salt = salt[len(magic):]
 
     # salt can have up to 8 characters:
-    import string
     salt = string.split(salt, '$', 1)[0]
     salt = salt[:8]
 
@@ -126,25 +125,20 @@ def unix_md5_crypt(pw, salt, magic=None):
 
     passwd = ''
 
-    passwd = passwd + to64((int(ord(final[0])) << 16)
-                           | (int(ord(final[6])) << 8)
-                           | (int(ord(final[12]))), 4)
+    passwd = passwd + to64(
+        (int(ord(final[0])) << 16) | (int(ord(final[6])) << 8) | (int(ord(final[12]))), 4)
 
-    passwd = passwd + to64((int(ord(final[1])) << 16)
-                           | (int(ord(final[7])) << 8)
-                           | (int(ord(final[13]))), 4)
+    passwd = passwd + to64(
+        (int(ord(final[1])) << 16) | (int(ord(final[7])) << 8) | (int(ord(final[13]))), 4)
 
-    passwd = passwd + to64((int(ord(final[2])) << 16)
-                           | (int(ord(final[8])) << 8)
-                           | (int(ord(final[14]))), 4)
+    passwd = passwd + to64(
+        (int(ord(final[2])) << 16) | (int(ord(final[8])) << 8) | (int(ord(final[14]))), 4)
 
-    passwd = passwd + to64((int(ord(final[3])) << 16)
-                           | (int(ord(final[9])) << 8)
-                           | (int(ord(final[15]))), 4)
+    passwd = passwd + to64(
+        (int(ord(final[3])) << 16) | (int(ord(final[9])) << 8) | (int(ord(final[15]))), 4)
 
-    passwd = passwd + to64((int(ord(final[4])) << 16)
-                           | (int(ord(final[10])) << 8)
-                           | (int(ord(final[5]))), 4)
+    passwd = passwd + to64(
+        (int(ord(final[4])) << 16) | (int(ord(final[10])) << 8) | (int(ord(final[5]))), 4)
 
     passwd = passwd + to64((int(ord(final[11]))), 2)
 

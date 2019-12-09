@@ -32,6 +32,7 @@ This Class is a plugin for the Shinken/Alignak Broker. It is in charge to get br
 and recreate real objects to propose a Web User Interface :)
 """
 
+# pylint: disable=invalid-name, wrong-import-position
 WEBUI_VERSION = "3.0.0 beta"
 WEBUI_COPYRIGHT = "2009-2019"
 WEBUI_LICENSE = "License GNU AGPL as published by the FSF, minimum version 3 of the License."
@@ -55,12 +56,6 @@ from bottle import request, response
 import bottle
 
 # Check if Alignak is installed
-# # An environment variable must be set when this UI module is to be used with Alignak
-# # This variable must contain a value different from 0
-# ALIGNAK = False
-# if os.environ.get('ALIGNAK_SHINKEN_UI', None):
-#     if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
-#         ALIGNAK = True
 ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 print("Underlying monitoring framework: %s" % ('Alignak' if ALIGNAK else 'Shinken'))
 
@@ -168,6 +163,7 @@ def resolve_auth_secret(configuration):
 
 # Class for the WebUI Broker
 class WebuiBroker(BaseModule, Daemon):
+    # pylint: disable=super-init-not-called
     def __init__(self, mod_conf):
         """UI initialisation
 
@@ -480,10 +476,11 @@ class WebuiBroker(BaseModule, Daemon):
         """
         return self.rg.want_brok(b)
 
-    def manage_signal(self, sig, frame):  # pylint: disable=unused-argument
+    # pylint: disable=access-member-before-definition
+    def manage_signal(self, sig, frame):
         """Generic function to handle signals
         Only called when the module process received SIGINT or SIGKILL. Note that
-        Alignak may also notify other signas like SIGHUP
+        Alignak may also notify other signals like SIGHUP
 
         :param sig: signal sent
         :type sig:
@@ -502,7 +499,8 @@ class WebuiBroker(BaseModule, Daemon):
             self.interrupted = True
         # super(BaseModule, self).manage_signal(sig=sig, frame=frame)
 
-    def main(self):  # pylint: disable=global-statement
+    # pylint: disable=no-value-for-parameter
+    def main(self):
         """
             Module main function
         """
@@ -577,56 +575,6 @@ class WebuiBroker(BaseModule, Daemon):
                 logger.debug("debug: %s", debug_log)
             del self.debug_output
 
-
-        # # Modules management
-        # # ---
-        # self.debug_output = []
-        #
-        # logger.info("configured modules: %s", self.modules)
-        # # todo: check this!
-        # # self.modules_manager = ModulesManager('webui', self.find_modules_path(), [])
-        # self.modules_manager = ModulesManager(self)
-        # self.modules_manager.modules = self.modules
-        #
-        # # Ok now start, or restart them!
-        # # Set modules, init them and start external ones
-        # self.do_load_modules(self.modules)
-        # # and start external modules too
-        # self.modules_manager.start_external_instances()
-
-        # # This function is loading all the installed 'webui' daemon modules...
-        # # self.do_load_modules(self.modules)
-        # if self.modules_manager.load_and_init(self.modules):
-        #     if self.modules_manager.instances:
-        #         logger.info("I correctly loaded my modules: [%s]",
-        #                     ','.join([inst.name for inst in self.modules_manager.instances]))
-        #     else:
-        #         logger.info("I do not have any module")
-        # else:  # pragma: no cover, not with unit tests...
-        #     logger.error("Errors were encountered when checking and loading modules:")
-        #     for msg in self.modules_manager.configuration_errors:
-        #         logger.error(msg)
-        #
-        # if self.modules_manager.configuration_warnings:  # pragma: no cover, not tested
-        #     for msg in self.modules_manager.configuration_warnings:
-        #         logger.warning(msg)
-        #
-        # logger.info("imported %d modules", len(self.modules_manager.instances))
-        #
-        # for inst in self.modules_manager.instances:
-        #     logger.info("loading %s", inst.get_name())
-        #     f = getattr(inst, 'load', None)
-        #     if f and callable(f):
-        #         logger.info("running module load function")
-        #         f(self)
-        # logger.info("loaded modules %s", [m.get_name() for m in self.modules])
-        #
-        # # We can now output some previously silenced debug output
-        # for debug_log in self.debug_output:
-        #     logger.debug("debug: %s", debug_log)
-        # del self.debug_output
-
-        # Check if the Bottle view dir really exist
         if not os.path.exists(bottle.TEMPLATE_PATH[0]):
             logger.error("The view path do not exist at %s", bottle.TEMPLATE_PATH)
             sys.exit(2)
@@ -723,7 +671,7 @@ class WebuiBroker(BaseModule, Daemon):
         except Exception as exp:
             logger.error("do_main exception: %s", str(exp))
             logger.error("traceback: %s", traceback.format_exc())
-            exit(1)
+            sys.exit(1)
 
     def push_external_command(self, e):  # pylint: disable=global-statement
         """
@@ -965,9 +913,9 @@ class WebuiBroker(BaseModule, Daemon):
             logger.error("load plugins directory does not exist: %s", plugin_dir)
             return
 
-        plugin_dirs = [fname for fname in os.listdir(plugin_dir)
-                       if fname not in ['__pycache__'] and
-                       os.path.isdir(os.path.join(plugin_dir, fname))]
+        plugin_dirs = [
+            fname for fname in os.listdir(plugin_dir)
+            if fname not in ['__pycache__'] and os.path.isdir(os.path.join(plugin_dir, fname))]
 
         # todo: Hmmm..... confirm it is necessary!
         # sys.path.append(plugin_dir)
@@ -1219,7 +1167,8 @@ class WebuiBroker(BaseModule, Daemon):
 
         try:
             retval = user and ((not self.manage_acl)
-                               or user.is_administrator() or user.is_commands_allowed())
+                               or user.is_administrator()
+                               or user.is_commands_allowed())
         except Exception:  # pylint: disable=broad-except
             retval = False
         return retval

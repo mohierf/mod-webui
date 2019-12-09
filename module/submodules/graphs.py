@@ -9,12 +9,10 @@ try:
 except ImportError:
     from urllib import quote
 
-ALIGNAK = False
-if os.environ.get('ALIGNAK_SHINKEN_UI', None):
-    if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
-        ALIGNAK = True
+from .metamodule import MetaModule
 
 # pylint: disable=invalid-name
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 if ALIGNAK:
     # Specific logger configuration
     import logging
@@ -22,8 +20,6 @@ if ALIGNAK:
     logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
 else:
     from shinken.log import logger
-
-from .metamodule import MetaModule
 
 
 class GraphsMetaModule(MetaModule):

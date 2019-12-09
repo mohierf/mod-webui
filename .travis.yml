@@ -1,8 +1,11 @@
+dist: xenial   # required for Python >= 3.7
 language: python
 sudo: true
 python:
+  - '3.7'
+  - '3.6'
+  - '3.5'
   - "2.7"
-  # - "2.6"
 
 services:
   - mongodb
@@ -13,15 +16,25 @@ install:
   - bash test/setup_test.sh
 
 script:
-  - cd test
   - pip freeze
+  # Static code analysis
+  # -- pycodestyle (former pep8)
+  # Ignore import order (plugins require this)
+  # Ignore line break before binary operator
+  - pycodestyle --max-line-length=120 --ignore=E402,W503 --exclude='*.pyc' module
+  # -- pylint
+  - pylint --rcfile=.pylintrc -r no module
+  # -- pep257
+  #  - pep257 --select=D300 alignak_module_webui
+  # Unit tests
+  # - cd test
   # - nosetests -xv --process-restartworker --processes=1 --process-timeout=300 --with-coverage --cover-package=module test*.py
   # - coverage combine
   # - coverage report -m
-  - cd ..
+  # - cd ..
 
-after_success:
-  # to get coverage data with relative paths and not absolute we have to
-  # execute coveralls from the base directory of the project,
-  # so we need to move the .coverage file here :
-  mv test/.coverage . && coveralls --rcfile=test/.coveragerc -v
+#after_success:
+#  # to get coverage data with relative paths and not absolute we have to
+#  # execute coveralls from the base directory of the project,
+#  # so we need to move the .coverage file here :
+#  mv test/.coverage . && coveralls --rcfile=test/.coveragerc -v

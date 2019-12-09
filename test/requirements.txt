@@ -1,13 +1,19 @@
 # Python requirements for unit tests
 -r ../requirements.txt
-unittest2
-mock
-coveralls
-nose-cov
-coverage
-nose
+
+# Static code analysis
 pylint
-pep8
+pycodestyle
 pep257
-# alignak
--e git+https://github.com/naparuba/shinken.git#egg=shinken
+
+# Comment because no tests are executed!
+# unittest2
+# mock
+# nose
+# nose-cov
+# coverage
+# coveralls
+
+# Comment because no tests are executed!
+# # alignak
+# -e git+https://github.com/naparuba/shinken.git#egg=shinken

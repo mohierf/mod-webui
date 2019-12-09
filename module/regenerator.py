@@ -41,6 +41,7 @@ import time
 import uuid
 import traceback
 
+# pylint: disable=invalid-name
 ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 if ALIGNAK:
     # Specific logger configuration
@@ -84,10 +85,9 @@ else:
     from shinken.objects.contactgroup import Contactgroup, Contactgroups
     from shinken.objects.notificationway import NotificationWay, NotificationWays
     from shinken.objects.timeperiod import Timeperiod, Timeperiods
-    from shinken.daterange import Timerange, Daterange
+    from shinken.daterange import Timerange
     from shinken.objects.command import Command, Commands
     from shinken.commandcall import CommandCall
-    from shinken.objects.config import Config
     from shinken.objects.schedulerlink import SchedulerLink, SchedulerLinks
     from shinken.objects.reactionnerlink import ReactionnerLink, ReactionnerLinks
     from shinken.objects.pollerlink import PollerLink, PollerLinks
@@ -535,10 +535,10 @@ class Regenerator(object):
             # Link with the other groups
             new_groups = []
             for sgname in group.servicegroup_members:
-                for group in self.servicegroups:
-                    if sgname == group.get_name() or sgname == group.uuid:
-                        new_groups.append(group)
-                        logger.debug("Found servicegroup %s", group.get_name())
+                for sg in self.servicegroups:
+                    if sgname == sg.get_name() or sgname == sg.uuid:
+                        new_groups.append(sg)
+                        logger.debug("Found servicegroup %s", sg.get_name())
                         break
                 else:
                     logger.warning("No servicegroup %s for servicegroup: %s",

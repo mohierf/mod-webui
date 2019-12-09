@@ -56,7 +56,7 @@ def lookup():
         hname = splitted[0]
         filtered_services = app.datamgr.get_host_services(hname, user)
         snames = ("%s/%s" % (hname, s.service_description) for s in filtered_services)
-        result = [n for n in snames]
+        result = snames
     else:
         filtered_hosts = app.datamgr.get_hosts(user)
         hnames = (h.host_name for h in filtered_hosts)

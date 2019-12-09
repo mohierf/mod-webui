@@ -28,15 +28,6 @@ import time
 # Check if Alignak is installed
 ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 
-# Alignak / Shinken base module are slightly different
-if ALIGNAK:
-    # Specific logger configuration
-    from alignak.log import logging, ALIGNAK_LOGGER_NAME
-
-    logger = logging.getLogger(ALIGNAK_LOGGER_NAME + ".webui")
-else:
-    from shinken.log import logger
-
 # Global value that will be changed by the main app
 app = None
 

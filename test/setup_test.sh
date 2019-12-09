@@ -27,7 +27,7 @@ cd $BASE_PATH
 echo 'Upgrade pip ...'
 pip install --upgrade pip
 
-# install prog AND tests requirements :
+# install program AND tests requirements :
 echo 'Installing application requirements ...'
 pip install -r requirements.txt
 # echo 'Installing application in development mode ...'
