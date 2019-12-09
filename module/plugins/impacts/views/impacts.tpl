@@ -10,9 +10,9 @@
 
 <div id="impacts-container">
    %if not impacts:
-   <center>
+   <div class="text-center">
      <h3>No impacts.</h3>
-   </center>
+   </div>
    %else:
 
    <div class="panel impacts-panel col-sm-5">

@@ -11,14 +11,14 @@
 
 <div id="minemap">
    %if not rows:
-      <center>
+      <div class="text-center">
          %if search_string:
          <h3>Bummer, we couldn't find anything.</h3>
          Use the filters or the bookmarks to find what you are looking for, or try a new search query.
          %else:
          <h3>No host or service.</h3>
          %end
-      </center>
+      </div>
    %else:
       <!-- Problems synthesis -->
       %s = app.datamgr.get_services_synthesis(user=user)

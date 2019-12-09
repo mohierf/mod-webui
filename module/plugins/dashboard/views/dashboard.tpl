@@ -64,9 +64,9 @@
 %if not len(widgets):
    <div class="panel panel-default">
       <div class="panel-heading" style="padding-bottom: -10">
-         <center>
+         <div class="text-center">
             <h3>You don't have any widget yet ...</h3>
-         </center>
+         </div>
          <hr/>
          <p>Use the <strong>widget selector</strong> to list all the available widgets.</p>
          <p>Select a proposed widget to view the widget description.</p>
@@ -77,10 +77,10 @@
 %else:
    <div class="panel panel-default">
       <div class="panel-heading" style="padding-bottom: -10">
-         <center>
+         <div class="text-center">
             <h3>You do not have any user's preferences storage module installed.</h3>
             <h4 class="alert alert-danger">The Web UI dashboard and user's preferences will not be saved.</h4>
-         </center>
+         </div>
          <hr/>
          <p>Installing and using a storage module is really easy, follow instructions in this documentation: <a href="https://github.com/shinken-monitoring/mod-webui/wiki/Installing-WebUI-storage-modules" target="_blank"> installing WebUI storage module</a></p>
       </div>

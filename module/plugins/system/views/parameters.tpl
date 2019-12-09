@@ -2,9 +2,9 @@
 
 <div class="panel panel-default">
 %if not configs:
-<center>
+<div class="text-center">
   <h3>No system information is available.</h3>
-</center>
+</div>
 %else:
 %for config in configs:
 <table class="table table-condensed" style="table-layout: fixed; word-wrap: break-word;">

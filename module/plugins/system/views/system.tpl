@@ -7,9 +7,9 @@
    %daemons = [ ('scheduler', schedulers), ('poller', pollers), ('broker', brokers), ('reactionner', reactionners), ('receiver', receivers)]
    %present = sum(1 for (type, satellites) in daemons if satellites)
    %if not present:
-      <center>
+      <div class="text-center">
         <h3>No system information is available.</h3>
-      </center>
+      </div>
    %else:
        %for (type, satellites) in daemons:
        <h4><i class="icon-wrench"></i> {{type.capitalize()}}</h4>

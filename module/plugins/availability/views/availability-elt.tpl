@@ -4,10 +4,10 @@
 %warn_level = elt.customs.get('_SLA_WARN', 99.0)
 
 %if not records:
-   <center>
+   <div class="text-center">
       <h3>No availability records found.</h3>
       You should install the <strong>mongo-logs</strong> Shinken module to collect hosts and services availability data.
-   </center>
+   </div>
 %else:
       %for title, log in records.items():
         %if log is not None:

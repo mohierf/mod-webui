@@ -41,10 +41,10 @@
    </div>
 
    %if not records:
-      <center>
+      <div class="text-center">
          <h3>No availability records found.</h3>
          You should install the <strong>mongo-logs</strong> Shinken module to collect hosts and services availability data.
-      </center>
+      </div>
    %else:
       <table class="table table-condensed">
          <thead>

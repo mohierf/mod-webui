@@ -52,9 +52,9 @@
          <div class="col-md-4 col-md-offset-4 col-sm-8 col-sm-offset-2">
             <div class="login-panel panel panel-default">
                <div class="panel-heading panel-heading-login">
-                  <center>
+                  <div class="text-center">
                      <img src="/static/logo/{{company_logo}}?v={{app.app_version}}" alt="Company logo" style="width: 80%"/>
-                  </center>
+                  </div>
                </div>
                <div class="panel-body">
                   <form role="form" class="form-signin" method="post" action="/user/auth">

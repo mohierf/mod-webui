@@ -16,7 +16,7 @@
    %include("_problems_synthesis.tpl", pbs=pbs, search_string=app.get_search_string())
 
    %if not pbs:
-   <center>
+   <div class="text-center">
      <div class="page-header">
        %if problems_search:
        <h3>Great! Everything is under control</h3>
@@ -30,7 +30,7 @@
        %end
        %end
      </div>
-   </center>
+   </div>
 
    %else:
 

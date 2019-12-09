@@ -6,10 +6,10 @@
 %narrow=True
 
 %if not tickets:
-   <center>
+   <div class="text-center">
       <h3>No helpdesk records (tickets) found.</h3>
       <p>Your request did not return any results.</p>
-   </center>
+   </div>
 %else:
    %include("_helpdesk")
 %end

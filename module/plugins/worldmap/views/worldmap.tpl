@@ -4,9 +4,9 @@
 <!-- HTML map container -->
 <div class="map_container">
    %if not hosts:
-      <center>
+      <div class="text-center">
          <h3>We couldn't find any hosts to locate on a map.</h3>
-      </center>
+      </div>
       <hr/>
       <p><strong>1. </strong>If you used a filter in the widget, change the filter to try a new search query.</p>
       <p><strong>2. </strong>Only the hosts having GPS coordinates may be located on the map. If you do not have any, add hosts GPS coordinates in the configuration file: </p>

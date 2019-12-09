@@ -245,9 +245,9 @@ def get_widget_tickets():
     """
     if not app.helpdesk_module.is_available():
         return """
-            <center>
+            <div class="text-center">
                 <h3>No Helpdesk module is installed.</h3>
-            </center>
+            </div>
         """
 
     user = app.get_user()
