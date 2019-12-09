@@ -395,7 +395,6 @@
                 positions += '|' + places;
             }
         });
-        // console.log('Give positions'+positions);
         return positions;
     };
 

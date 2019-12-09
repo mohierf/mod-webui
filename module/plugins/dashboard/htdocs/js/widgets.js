@@ -204,11 +204,11 @@ $(function(){
    // We hide the loader spinner thing
    $('#widgets_loading').hide()
 
-   // Very basic usage
-   var easy_widget_mgr = $.fn.EasyWidgets({
+   // Easy widgets library configuration
+   $.fn.EasyWidgets({
       i18n : {
             editText : '<i class="fas fa-edit font-grey"></i>',
-            closeText : '<i class="fas fa-trash-o font-grey"></i>',
+            closeText : '<i class="fas fa-trash font-grey"></i>',
             collapseText : '<i class="fas fa-chevron-up font-grey"></i>',
             cancelEditText : '<i class="fas fa-edit font-grey"></i>',
             extendText : '<i class="fas fa-chevron-down font-grey"></i>'
