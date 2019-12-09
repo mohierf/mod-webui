@@ -45,9 +45,9 @@ def show_minemap():
     search = app.request.query.get('search', "type:host")
     if "type:host" not in search:
         search = "type:host " + search
-    logger.debug("search parameters '%s'", search)
+    logger.debug("[minemap] search parameters '%s'", search)
     items = app.datamgr.search_hosts_and_services(search, user)
-    logger.info("[minemap] got %d matching items: %s", len(items), [i.get_name() for i in items])
+    logger.debug("[minemap] got %d matching items: %s", len(items), [i.get_name() for i in items])
 
     # Fetch elements per page preference for user, default is 25
     elts_per_page = app.prefs_module.get_ui_user_preference(user, 'elts_per_page', 25)
@@ -58,7 +58,6 @@ def show_minemap():
         elts_per_page = step
     start = int(app.request.GET.get('start', '0'))
     end = int(app.request.GET.get('end', start + step))
-    logger.info("[minemap] got %d matching items: %s", len(items), [i.get_name() for i in items])
 
     # If we overflow, came back as normal
     total = len(items)
@@ -67,12 +66,11 @@ def show_minemap():
         end = step
 
     navi = app.helper.get_navi(total, start, step=step)
-    logger.info("[minemap2] got %d matching items: %s", len(items), [i.get_name() for i in items])
-    logger.info("[minemap2] start %d, end: %d", start, end)
+    logger.debug("[minemap] start %d, end: %d", start, end)
 
     # Limit the number of elements
     items = items[start:end]
-    logger.info("[minemap3] displaying %d items: %s", len(items), [i.get_name() for i in items])
+    logger.debug("[minemap] displaying %d items: %s", len(items), [i.get_name() for i in items])
 
     # rows and columns will contain, respectively, all unique hosts and all unique services ...
     rows = []

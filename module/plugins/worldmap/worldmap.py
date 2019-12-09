@@ -39,7 +39,13 @@ else:
 app = None
 
 # Plugin's parameters
-params = {}
+params = {
+    'zoom': 7,
+    'lng': 2.293858,
+    'lat': 48.858674,
+    'hosts_level': [0, 1, 2, 3, 4, 5],
+    'services_level': [0, 1, 2, 3, 4, 5]
+}
 
 
 # Hook called by WebUI module once the plugin is loaded ...
@@ -47,23 +53,25 @@ params = {}
 def load_config(the_app):
     global params
 
-    logger.info("loading configuration ...")
-    logger.info("app configuration: %s", the_app.c)
+    logger.info("[worldmap] loading configuration ...")
 
-    properties = {
-        'worldmap-zoom': '{"default_zoom": 16}',
-        'worldmap-lng': '{"default_lng": 5.080625}',
-        'worldmap-lat': '{"default_lat": 45.054148}',
-        'worldmap-hosts': '{"hosts_level": [1,2,3,4,5]}',
-        'worldmap-services': '{"services_level": [1,2,3,4,5]}',
-        'worldmap-layer': '{"layer": ""}',
-    }
+    plugin_configuration = the_app.get_plugin_config('worldmap')
+    for prop, default in list(plugin_configuration.items()):
+        # Those are list of integers...
+        if prop in ['hosts_level', 'services_level']:
+            if ',' in default:
+                default = default.split(',')
+            else:
+                default = [default]
 
-    for prop, default in list(properties.items()):
-        params.update(json.loads(the_app.prefs_module.get_ui_common_preference(prop, default)))
+            try:
+                default = [int(i) for i in default]
+            except ValueError:
+                continue
+        params[prop] = default
 
-    logger.info("configuration loaded.")
-    logger.info("configuration, params: %s", params)
+    logger.info("[worldmap] configuration loaded.")
+    logger.debug("[worldmap] configuration: %s", params)
 
 
 def search_hosts_with_coordinates(search, user):
@@ -73,15 +81,18 @@ def search_hosts_with_coordinates(search, user):
     logger.debug("worldmap, search parameters '%s'", search)
     hosts = app.datamgr.search_hosts_and_services(search, user)
 
+    logger.debug("hosts business impact filter: %s", params['hosts_level'])
+
     # We are looking for hosts with valid GPS coordinates,
     # and we just give them to the template to print them.
     # :COMMENT:maethor:150810: If you want default coordinates, just put them
     # in the 'generic-host' template.
     valid_hosts = []
     for host in hosts:
-        logger.debug("found host '%s'", host.get_name())
+        logger.debug("got host: %s, BI: %d", host.get_name(), host.business_impact)
 
         if host.business_impact not in params['hosts_level']:
+            logger.debug("host '%s' is BI filtered", host.get_name())
             continue
 
         try:
@@ -94,8 +105,7 @@ def search_hosts_with_coordinates(search, user):
             logger.debug("host '%s' has invalid GPS coordinates", host.get_name())
             continue
 
-        logger.debug("host '%s' located on worldmap: %f - %f",
-                     host.get_name(), _lat, _lng)
+        logger.debug("host '%s' located on worldmap: %f - %f", host.get_name(), _lat, _lng)
         valid_hosts.append(host)
 
     return valid_hosts
@@ -109,9 +119,12 @@ def show_worldmap():
     search = app.request.query.get('search', "type:host")
 
     # So now we can just send the valid hosts to the template
-    return {'search_string': search, 'params': params,
-            'mapId': 'hostsMap',
-            'hosts': search_hosts_with_coordinates(search, user)}
+    return {
+        'mapId': 'hostsMap',
+        'search_string': search,
+        'params': params,
+        'hosts': search_hosts_with_coordinates(search, user)
+    }
 
 
 def show_worldmap_widget():
@@ -154,8 +167,8 @@ def show_worldmap_widget():
         title = 'Worldmap (%s)' % refine_search
 
     return {
-        'wid': wid,
         'mapId': "map_%d" % random.randint(1, 9999),
+        'wid': wid,
         'collapsed': collapsed,
         'options': options,
         'base_url': '/widget/worldmap',
@@ -172,17 +185,22 @@ Show a map of all monitored hosts.
 # We export our properties to the webui
 pages = {
     show_worldmap: {
-        'name': 'Worldmap', 'route': '/worldmap', 'view': 'worldmap',
-        'static': True, 'search_engine': True
+        'name': 'Worldmap',
+        'route': '/worldmap',
+        'view': 'worldmap',
+        'static': True,
+        'search_engine': True
     },
     show_worldmap_widget: {
-        'name': 'wid_Worldmap', 'route': '/widget/worldmap', 'view': 'worldmap_widget',
+        'name': 'wid_Worldmap',
+        'route': '/widget/worldmap',
+        'view': 'worldmap_widget',
+        'static': True,
         'widget': ['dashboard'],
         'widget_desc': widget_desc,
         'widget_name': 'worldmap',
         'widget_alias': 'Worldmap',
         'widget_icon': 'globe',
-        'widget_picture': '/static/worldmap/img/widget_worldmap.png',
-        'static': True
+        'widget_picture': '/static/worldmap/img/widget_worldmap.png'
     }
 }

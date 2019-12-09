@@ -216,13 +216,13 @@
 
       map_{{mapId}} = L.map('{{mapId}}');
       L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'}).addTo(map_{{mapId}});
-      var bounds = new L.LatLngBounds();
 
       if (debugMaps)
         console.log('Map object ({{mapId}}): ', map_{{mapId}})
 
-        // Markers ...
+      // Markers ...
       var allMarkers_{{mapId}} = [];
+      var bounds = new L.LatLngBounds();
       for (var i = 0; i < hosts.length; i++) {
         var h = hosts[i];
         bounds.extend(h.location());
@@ -230,7 +230,11 @@
       }
 
       // Zoom
-      map_{{mapId}}.fitBounds(bounds);
+      if (hosts.length > 0) {
+         map_{{mapId}}.fitBounds(bounds);
+      } else {
+         map_{{mapId}}.setView(new L.LatLng({{ params['lat'] }}, {{ params['lng'] }}), {{ params['zoom'] }});
+      }
 
       // Build marker cluster
       var markerCluster = L.markerClusterGroup({
