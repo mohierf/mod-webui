@@ -471,22 +471,6 @@ function toggle_host_checks(name, b){
 
 
 /*
- * Enable/disable all notifications
- */
-function toggle_all_notifications(b){
-   if (actions_logs) console.debug("Toggle all notifications, currently: ", b)
-
-   if (b) {
-      var url = '/action/ENABLE_NOTIFICATIONS'
-      launch(url, 'All notifications enabled');
-   } else {
-      var url = '/action/DISABLE_NOTIFICATIONS';
-      launch(url, 'All notifications disabled');
-   }
-}
-
-
-/*
  * Enable/disable host/service notifications
  */
 function toggle_notifications(name, b){
@@ -671,9 +655,9 @@ function add_remove_elements(name){
 // Adding an element in the selected elements list
 function add_element(name){
    // Force to check the checkbox
-   $('td input[type=checkbox][data-item="'+name+'"]').prop("checked", true);
-
-   $('td input[type=checkbox][data-item="'+name+'"]').closest('tr').addClass('selected');
+   $('td input[type=checkbox][data-item="'+name+'"]')
+       .prop("checked", true)
+       .closest('tr').addClass('selected');
 
    if (problems_logs) console.log('Select element: ', name)
 
@@ -692,9 +676,9 @@ function add_element(name){
 // Removing an element from the selected elements list
 function remove_element(name){
    // Force to uncheck the checkbox
-   $('td input[type=checkbox][data-item="'+name+'"]').prop("checked", false);
-
-   $('td input[type=checkbox][data-item="'+name+'"]').closest('tr').removeClass('selected');
+   $('td input[type=checkbox][data-item="'+name+'"]')
+       .prop("checked", false)
+       .closest('tr').removeClass('selected');
 
    if (problems_logs) console.log('Unselect element: ', name)
    selected_elements.splice($.inArray(name, selected_elements),1);
@@ -729,6 +713,20 @@ function get_action_element(btn) {
 
     return elt;
 }
+
+
+/*
+ * Enable/disable system-wide notifications
+ */
+$("body").on("click", ".js-toggle-system-notifications", function () {
+   if ($(this).is(':checked')) {
+      launch("/action/ENABLE_NOTIFICATIONS",
+          'System-wide notifications are enabled');
+   } else {
+      launch("/action/DISABLE_NOTIFICATIONS",
+          'System-wide notifications are disabled');
+   }
+});
 
 $("body").on("click", ".js-delete-comment", function () {
     var elt = $(this).data('element');
@@ -876,6 +874,7 @@ $("body").on("click", ".js-create-ticket-followup", function () {
     var status = $(this).data('status');
     display_modal("/helpdesk/ticket_followup/add/"+elt+'?ticket='+ticket+'&status='+status);
 });
+
 
 // Former shinken-bookmarks.js
 // -----
@@ -1232,7 +1231,6 @@ function disable_sound() {
        .attr('data-original-title', "Enable sound alert").tooltip({html: 'true', placement: 'bottom'});
    sessionStorage.setItem("sound_play", '0');
 }
-
 
 function enable_sound() {
    if (layout_logs) console.debug("Enabling sound");

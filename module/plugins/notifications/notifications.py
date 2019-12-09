@@ -34,18 +34,19 @@ def notification_toggle():
     user = app.get_user()
 
     return {
-        'title': 'Notification Toggle',
+        'title': 'System notifications',
         'wid': wid,
         'collapsed': collapsed,
         'options': {},
         'base_url': '/widget/notification_toggle',
-        'is_enabled': app.datamgr.get_configs()[0].notifications_enabled,
+        # 'is_enabled': app.datamgr.get_configs()[0].notifications_enabled,
+        'is_enabled': app.datamgr.get_configuration_parameter('enable_notifications'),
         'user': user,
     }
 
 
-notification_toggle_widget_desc = """<h4>Notification Toggle</h4>
-Display a notification toggle switch & the current state of notifications.
+notification_toggle_widget_desc = """<h4>system notifications toggle</h4>
+Display a notification toggle switch and the current state of system notifications.
 """
 
 
