@@ -992,7 +992,7 @@ class Regenerator(object):
         self.configs[c_id] = data
 
         # We should clean all previously added hosts and services
-        logger.info("Cleaning hosts/service of %s", c_id)
+        logger.info("Cleaning hosts/service of %s", c_name)
         to_del_hosts = [h for h in self.hosts if h.instance_id == c_id]
         to_del_srv = [s for s in self.services if s.instance_id == c_id]
 

@@ -7,6 +7,7 @@
 %s = app.datamgr.get_services_synthesis(user=user)
 
 %hide_empty = (app.get_config('plugin.servicegroups.hide_empty', '0') == '1')
+%hide_zeros = (app.get_config('plugin.servicegroups.hide_zeros', '0') == '1')
 
 <div id="servicesgroups">
    <!-- Progress bar -->
@@ -66,28 +67,38 @@
                <div>
                   %for state in 'ok', 'warning', 'critical', 'pending':
                   %if s['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:service is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:service is:{{state}}">
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
-                  </span>
-                  %if s['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>
                <div>
-                  %for state in 'unknown', 'ack', 'downtime':
+                  %for state in 'unreachable', 'unknown', 'ack', 'downtime':
                   %if s['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:service is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:service is:{{state}}">
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
-                  </span>
-                  %if s['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>
@@ -190,28 +201,38 @@
                <div>
                   %for state in 'ok', 'warning', 'critical', 'pending':
                   %if s['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:service sg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:service sg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
-                  </span>
-                  %if s['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>
                <div>
-                  %for state in 'unknown', 'ack', 'downtime':
+                  %for state in 'unreachable', 'unknown', 'ack', 'downtime':
                   %if s['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:service sg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:service sg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if s['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (s['nb_' + state], s['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='service', state=state, label=label)}}
-                  </span>
-                  %if s['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>

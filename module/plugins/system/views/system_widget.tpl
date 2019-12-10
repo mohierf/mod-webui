@@ -33,10 +33,10 @@
              %end
              <td>
                 %if not s.alive:
-                    {{!helper.get_fa_icon_state(cls='service', state='warning')}}
+                    {{!helper.get_fa_icon_state(cls='service', state='critical')}}
                 %else:
-                    %if s.attempt:
-                        {{!helper.get_fa_icon_state(cls='service', state='critical')}}
+                    %if s.attempt > 0:
+                        {{!helper.get_fa_icon_state(cls='service', state='warning')}}
                     %else:
                         {{!helper.get_fa_icon_state(cls='service', state='ok')}}
                     %end

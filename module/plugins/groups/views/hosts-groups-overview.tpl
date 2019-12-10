@@ -7,6 +7,7 @@
 %h = app.datamgr.get_hosts_synthesis(user=user)
 
 %hide_empty = (app.get_config('plugin.hostgroups.hide_empty', '0') == '1')
+%hide_zeros = (app.get_config('plugin.hostgroups.hide_zeros', '0') == '1')
 
 <div id="hostsgroups">
    <!-- Progress bar -->
@@ -70,14 +71,19 @@
                <div>
                   %for state in 'up', 'unreachable', 'down', 'pending':
                   %if h['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:host is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:host is:{{state}}">
+                     <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
-                  </span>
-                  %if h['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>
@@ -85,13 +91,18 @@
                   %for state in 'unknown', 'ack', 'downtime':
                   %if h['nb_' + state] > 0:
                   <a role="menuitem" href="/all?search=type:host is:{{state}}">
-                  %end
                   <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
                     %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
                     {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
                   </span>
-                  %if h['nb_' + state] > 0:
                   </a>
+                  %else:
+                  %if not hide_zeros:
+                  <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                    %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                    {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                  </span>
+                  %end
                   %end
                   %end
                </div>
@@ -195,28 +206,38 @@
                <div>
                   %for state in 'up', 'unreachable', 'down', 'pending':
                   %if h['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:host hg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:host hg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
-                  </span>
-                  %if h['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>
                <div>
                   %for state in 'unknown', 'ack', 'downtime':
                   %if h['nb_' + state] > 0:
-                  <a role="menuitem" href="/all?search=type:host hg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <a role="menuitem" href="/all?search=type:host hg:{{'"%s"' % group.get_name()}} is:{{state}}">
+                     <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                     </span>
+                     </a>
+                  %else:
+                  %if not hide_zeros:
+                     <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
+                       %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
+                       {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
+                     </span>
                   %end
-                  <span class="{{'font-' + state if h['nb_' + state] > 0 else 'font-greyed'}}">
-                    %label = "%s <i>(%s%%)</i>" % (h['nb_' + state], h['pct_' + state])
-                    {{!helper.get_fa_icon_state_and_label(cls='host', state=state, label=label)}}
-                  </span>
-                  %if h['nb_' + state] > 0:
-                  </a>
                   %end
                   %end
                </div>
