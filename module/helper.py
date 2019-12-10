@@ -942,6 +942,95 @@ class Helper(object):
         return self.get_element_urls(obj, 'action_url',
                                      title=title, icon=icon, css=css)
 
+    def get_element_flapping_options(self, item):
+        """"Get the HTML for the flapping options of an item"""
+        if not item or not hasattr(item, 'flap_detection_options'):
+            return ""
+
+        messages = {
+            'o': 'Up', 'd': 'Down', 'u': 'Unreachable'
+        }
+        if ALIGNAK:
+            messages = {
+                'o': 'Up', 'd': 'Down', 'x': 'Unreachable'
+            }
+        if item.__class__.my_type == 'service':
+            messages = {
+                'o': 'Ok', 'w': 'Warning', 'u': 'Unknown', 'c': 'Critical'
+            }
+            if ALIGNAK:
+                messages = {
+                    'o': 'Ok', 'w': 'Warning', 'u': 'Unknown', 'x': 'Unreachable', 'c': 'Critical'
+                }
+
+        res = ""
+        for message in messages:
+            res = res + self.get_on_off(message in item.flap_detection_options,
+                                        '', '&nbsp;' + messages[message] + '&nbsp;')
+
+        return res
+
+    def get_element_stalking_options(self, item):
+        """"Get the HTML for the stalking options of an item"""
+        if not item or not hasattr(item, 'stalking_options'):
+            return ""
+
+        messages = {
+            'o': 'Up', 'd': 'Down', 'u': 'Unreachable'
+        }
+        if ALIGNAK:
+            messages = {
+                'o': 'Up', 'd': 'Down', 'x': 'Unreachable'
+            }
+        if item.__class__.my_type == 'service':
+            messages = {
+                'o': 'Ok', 'w': 'Warning', 'u': 'Unknown', 'c': 'Critical'
+            }
+            if ALIGNAK:
+                messages = {
+                    'o': 'Ok', 'w': 'Warning', 'u': 'Unknown', 'x': 'Unreachable', 'c': 'Critical'
+                }
+
+        res = ""
+        for message in messages:
+            res = res + self.get_on_off(message in item.stalking_options,
+                                        '', '&nbsp;' + messages[message] + '&nbsp;')
+
+        return res
+
+    def get_element_notification_options(self, item):
+        """"Get the HTML for the notification options of an item"""
+        if not item or not hasattr(item, 'notification_options'):
+            return ""
+
+        messages = {
+            'n': 'None', 'r': 'Recovery', 'd': 'Down', 'u': 'Unreachable',
+            'f': 'Flapping', 's': 'Downtimes'
+        }
+        if ALIGNAK:
+            messages = {
+                'n': 'None', 'r': 'Recovery', 'd': 'Down', 'x': 'Unreachable',
+                'f': 'Flapping', 's': 'Downtimes'
+            }
+        if item.__class__.my_type == 'service':
+            messages = {
+                'n': 'None', 'r': 'Recovery', 'w': 'Warning', 'u': 'Unknown', 'c': 'Critical',
+                'f': 'Flapping', 's': 'Downtimes'
+            }
+            if ALIGNAK:
+                messages = {
+                    'n': 'None', 'r': 'Recovery', 'w': 'Warning', 'u': 'Unknown',
+                    'x': 'Unreachable', 'c': 'Critical',
+                    'f': 'Flapping', 's': 'Downtimes'
+                }
+
+        res = ""
+        for message in messages:
+            res = res + self.get_on_off(message in item.notification_options,
+                                        '', '&nbsp;' + messages[message] + '&nbsp;')
+
+        return res
+
     def hst_srv_sort(self, svc1, svc2):
         """Sort hosts and services by impact, states and co"""
         if svc1.business_impact > svc2.business_impact:

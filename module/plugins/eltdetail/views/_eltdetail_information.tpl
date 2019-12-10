@@ -340,7 +340,9 @@
             %if elt.flap_detection_enabled:
             <tr>
               <td><strong>Options:</strong></td>
-              <td>{{', '.join(elt.flap_detection_options)}}</td>
+              <td>
+                {{! helper.get_element_flapping_options(elt)}}
+              </td>
             </tr>
             <tr>
               <td><strong>Low threshold:</strong></td>
@@ -364,7 +366,9 @@
           <tbody class="small">
             <tr>
               <td><strong>Options:</strong></td>
-              <td>{{', '.join(elt.stalking_options)}}</td>
+              <td>
+                {{! helper.get_element_stalking_options(elt)}}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -416,31 +420,9 @@
               %end
             </tr>
             <tr>
-              %if elt_type=='host':
-              %message = {}
-              %message['d'] = 'Down'
-              %message['u'] = 'Unreachable'
-              %message['x'] = 'Unreachable'
-              %message['r'] = 'Recovery'
-              %message['f'] = 'Flapping'
-              %message['s'] = 'Downtimes'
-              %message['n'] = 'None'
-              %else:
-              %message = {}
-              %message['w'] = 'Warning'
-              %message['u'] = 'Unknown'
-              %message['x'] = 'Unreachable'
-              %message['c'] = 'Critical'
-              %message['r'] = 'Recovery'
-              %message['f'] = 'Flapping'
-              %message['s'] = 'Downtimes'
-              %message['n'] = 'None'
-              %end
               <td><strong>Notification options:</strong></td>
               <td>
-                %for m in message:
-                {{! helper.get_on_off(m in elt.notification_options, '', '&nbsp;' + message[m])}}&nbsp;
-                %end
+                {{! helper.get_element_notification_options(elt)}}
               </td>
             </tr>
             <tr>
