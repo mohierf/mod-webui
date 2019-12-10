@@ -1,11 +1,5 @@
 %rebase("layout", css=['logs/css/logs.css','logs/css/sliding_navigation.css','logs/css/bootstrap-multiselect.css'], js=['logs/js/bootstrap-multiselect.js'], title='System logs')
 
-%if alignak:
-%from alignak.version import VERSION
-%fmwk="Alignak"
-%else:
-%from shinken.bin import VERSION
-%end
 %helper = app.helper
 %import time
 %import datetime
@@ -45,7 +39,7 @@
 <!-- Logs parameters -->
 <ul class="sliding-navigation drop-shadow" id="parameters">
   <li class="sliding-element"><h3>Parameters</h3></li>
-  %if len(params['logs_hosts']) > 0:
+  %if params['logs_hosts']:
   <li class="sliding-element">
     <a href="/logs/hosts_list" data-toggle="modal" data-target="#modal"><i class="fas fa-gear"></i> Hosts filter: {{len(params['logs_hosts'])}}
     <ul>
@@ -56,7 +50,7 @@
     </a>
   </li>
   %end
-  %if len(params['logs_services']) > 0:
+  %if params['logs_services']:
   <li class="sliding-element">
     <a href="/logs/services_list" data-toggle="modal" data-target="#modal"><i class="fas fa-gear"></i> Services filter:
     <ul>
@@ -67,11 +61,11 @@
     </a>
   </li>
   %end
-  %if len(params['logs_type']) > 0:
+  %if params['events']:
   <li class="sliding-element">
     <a href="/logs/logs_type_list" data-toggle="modal" data-target="#modal"><i class="fas fa-gear"></i> Logs type filter:
     <ul>
-    %for log_type in params['logs_type']:
+    %for log_type in params['events']:
       <li class="sliding-element">{{log_type}}</li>
     %end
     </ul>
@@ -127,6 +121,7 @@
 
 <div class="panel panel-default">
   <div class="panel-body">
+
    <div class="row row-fluid">
      <div class="col-md-6">
        <form class="form-inline pull-left" role="form" method="get" action="/logs">
@@ -147,18 +142,40 @@
       <table class="table table-condensed">
          <colgroup>
             <col style="width: 10%" />
-            <col style="width: 90%" />
+            <!-- <col style="width: 90%" /> -->
          </colgroup>
          <thead>
             <tr>
-               <th colspan="2"><em>{{message}}</em></th>
+               <th colspan="20"><em>{{message}}</em></th>
+            </tr>
+            <tr>
+               <th>{{ params['time_field'] }}</th>
+               %for field in params['other_fields']:
+                  <th>{{field}}</th>
+               %end
             </tr>
          </thead>
+
          <tbody style="font-size:x-small;">
             %for log in records:
             <tr>
-               <td>{{time.strftime(date_format, time.localtime(log['time']))}}</td>
-               <td>{{log['message']}}</td>
+               %if params['date_format'] == 'timestamp':
+               <td>{{ time.strftime(date_format, time.localtime(log[params['time_field']])) }}</td>
+               %else:
+               <td>{{ log[params['time_field']] }}</td>
+               %end
+
+               %for field in params['other_fields']:
+                  %if '.' in field:
+                  %before = field.split('.')[0]
+                  %after = field.split('.')[1]
+                  %before_value = log.get(before, None)
+                  %value = before_value.get(after, '') if before else ''
+                  %else:
+                  %value = log.get(field, '')
+                  %end
+                  <td>{{value}}</td>
+               %end
             </tr>
             %end
          </tbody>

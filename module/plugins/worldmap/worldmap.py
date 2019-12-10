@@ -38,7 +38,7 @@ else:
 # Will be populated by the UI with it's own value
 app = None
 
-# Plugin's parameters
+# Plugin's default parameters
 params = {
     'zoom': 7,
     'lng': 2.293858,
@@ -60,7 +60,7 @@ def load_config(the_app):
         # Those are list of integers...
         if prop in ['hosts_level', 'services_level']:
             if ',' in default:
-                default = default.split(',')
+                default = [item.strip() for item in default.split(',')]
             else:
                 default = [default]
 

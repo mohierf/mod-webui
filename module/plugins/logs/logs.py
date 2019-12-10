@@ -27,9 +27,7 @@
 import os
 import json
 import time
-import datetime
-
-from config_parser import ConfigParser
+from datetime import datetime, date
 
 # Check if Alignak is installed
 ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
@@ -43,10 +41,50 @@ if ALIGNAK:
 else:
     from shinken.log import logger
 
-# Get plugin's parameters from configuration file
+# Plugin's default parameters
 params = {
-    'logs_type': ['INFO', 'WARNING', 'ERROR'],
+    # Field used to store a timestamp date
+    'time_field': 'time',
+
+    # Field used for the event type filter
+    'type_field': 'type',
+
+    # Shinken mongo logs module uses an integer timestamp
+    'date_format': 'timestamp',
+
+    # Shinken mongo logs module uses 'message' to store a log information
+    'other_fields': ['message'],
+
+    # Log type may be:
+    #  INFO
+    #  WARNING
+    #  ERROR
+    #  CURRENT SERVICE STATE
+    #  INITIAL SERVICE STATE
+    #  SERVICE ALERT
+    #  SERVICE DOWNTIME ALERT
+    #  SERVICE FLAPPING ALERT
+    #  CURRENT HOST STATE
+    #  INITIAL HOST STATE
+    #  HOST ALERT
+    #  HOST DOWNTIME ALERT
+    #  HOST FLAPPING ALERT
+    #  SERVICE NOTIFICATION
+    #  HOST NOTIFICATION
+    #  PASSIVE SERVICE CHECK
+    #  PASSIVE HOST CHECK
+    #  SERVICE EVENT HANDLER
+    #  HOST EVENT HANDLER
+    #  EXTERNAL COMMAND
+    # 'events': ['INFO', 'WARNING', 'ERROR'],
+    'events': [
+        'HOST ALERT', 'SERVICE ALERT', 'EXTERNAL COMMAND', 'HOST NOTIFICATION', 'SERVICE NOTIFICATION'
+    ],
+
+    # Hosts filtering
     'logs_hosts': [],
+
+    # Services filtering
     'logs_services': []
 }
 
@@ -62,34 +100,35 @@ def _get_logs(*args, **kwargs):
     return None
 
 
-# pylint: disable=global-statement,unused-argument
+# pylint: disable=global-statement
 def load_config(the_app):
+    """Load the configuration from specific parameters used in the global WebUI configuration
+    :param the_app: the current application
+    :return:
+    """
     global params
 
-    currentdir = os.path.dirname(os.path.realpath(__file__))
-    configuration_file = "%s/%s" % (currentdir, 'plugin.cfg')
-    logger.info("[logs] Plugin configuration file: %s", configuration_file)
-    try:
-        scp = ConfigParser('#', '=')
-        tmp = params.copy()
-        tmp.update(scp.parse_config(configuration_file))
-        params = tmp
+    logger.info("[logs] loading configuration ...")
 
-        params['logs_type'] = [item.strip() for item in params['logs_type'].split(',')]
-        if params['logs_hosts']:
-            params['logs_hosts'] = [item.strip() for item in params['logs_hosts'].split(',')]
-        if params['logs_services']:
-            params['logs_services'] = [item.strip() for item in params['logs_services'].split(',')]
+    plugin_configuration = the_app.get_plugin_config('logs')
+    for prop, default in list(plugin_configuration.items()):
+        # Those are list of strings...
+        if prop in ['other_fields', 'events', 'logs_hosts', 'logs_services']:
+            if ',' in default:
+                default = [item.strip() for item in default.split(',')]
+            else:
+                default = [default]
 
-        logger.info("[logs] configuration loaded.")
-        logger.info("[logs] configuration, fetching types: %s", params['logs_type'])
-        logger.info("[logs] configuration, hosts: %s", params['logs_hosts'])
-        logger.info("[logs] configuration, services: %s", params['logs_services'])
-        return True
-    except Exception as exp:
-        logger.warning("[logs] configuration file (%s) not available: %s",
-                       configuration_file, str(exp))
-        return False
+        params[prop] = default
+
+    logger.info("[logs] configuration, timestamp field: %s", params['time_field'])
+    logger.info("[logs] configuration, date format: %s", params['date_format'])
+    logger.info("[logs] configuration, other fields: %s", params['other_fields'])
+    logger.info("[logs] configuration, fetching events: %s", params['events'])
+    logger.info("[logs] configuration, hosts: %s", params['logs_hosts'])
+    logger.info("[logs] configuration, services: %s", params['logs_services'])
+
+    logger.info("[logs] configuration loaded.")
 
 
 def form_hosts_list():
@@ -141,13 +180,13 @@ def set_logs_type_list():
     if app.request.forms.get('cancel'):
         app.bottle.redirect("/logs")
 
-    params['logs_type'] = []
+    params['events'] = []
 
     logs_type_list = app.request.forms.getall('logs_typeList[]')
     logger.debug("[logs] Selected logs types : ")
     for log_type in logs_type_list:
         logger.debug("[logs] - log type : %s", log_type)
-        params['logs_type'].append(log_type)
+        params['events'].append(log_type)
 
     app.bottle.redirect("/logs")
 
@@ -155,10 +194,10 @@ def set_logs_type_list():
 def get_history():
     user = app.get_user()
 
-    filters = dict()
+    filters = {}
 
-    service = app.request.GET.get('service', None)
-    host = app.request.GET.get('host', None)
+    service = app.request.query.get('service', None)
+    host = app.request.query.get('host', None)
 
     if host:
         if service:
@@ -174,11 +213,11 @@ def get_history():
     if host:
         filters['host_name'] = host
 
-    logclass = app.request.GET.get('logclass', None)
+    logclass = app.request.query.get('logclass', None)
     if logclass is not None:
         filters['logclass'] = int(logclass)
 
-    command_name = app.request.GET.get('commandname', None)
+    command_name = app.request.query.get('commandname', None)
     if command_name is not None:
         try:
             command_name = json.loads(command_name)
@@ -186,11 +225,19 @@ def get_history():
             pass
         filters['command_name'] = command_name
 
-    limit = int(app.request.GET.get('limit', 100))
-    offset = int(app.request.GET.get('offset', 0))
+    limit = int(app.request.query.get('limit', 100))
+    offset = int(app.request.query.get('offset', 0))
 
-    logs = _get_logs(filters=filters, limit=limit, offset=offset)
-    return {'records': logs}
+    logs = _get_logs(filters=filters,
+                     limit=limit,
+                     offset=offset, time_field=params['time_field'])
+
+    return {
+        'time_field': params['time_field'],
+        'type_field': params['type_field'],
+        'other_fields': params['other_fields'],
+        'records': logs
+    }
 
 
 # :TODO:maethor:171017: This function should be merge in get_history
@@ -198,31 +245,46 @@ def get_global_history():
     user = app.get_user()
     _ = user.is_administrator() or app.redirect403()
 
-    midnight_timestamp = time.mktime(datetime.date.today().timetuple())
+    midnight_timestamp = time.mktime(date.today().timetuple())
     try:
         range_start = int(app.request.GET.get('range_start', midnight_timestamp))
     except ValueError:
         range_start = midnight_timestamp
+    search_range_start = range_start
     try:
         range_end = int(app.request.GET.get('range_end', midnight_timestamp + 86399))
     except ValueError:
         range_end = midnight_timestamp + 86399
+    search_range_end = range_end
 
-    logger.debug("[logs] get_global_history, range: %d - %d", range_start, range_end)
+    if params['date_format'] in ['datetime']:
+        # Assuming UTC timestamps!
+        search_range_start = datetime.utcfromtimestamp(range_start)
+        search_range_end = datetime.utcfromtimestamp(range_end)
 
-    logs = _get_logs(filters={'type': {'$in': params['logs_type']}},
-                     range_start=range_start, range_end=range_end)
+    logger.info("[logs] get_global_history, range: %d - %d", search_range_start, search_range_end)
 
+    filters = {}
+    if params['events'] and params['events'][0]:
+        filters = {params['type_field']: {'$in': params['events']}}
+
+    # logs is a pymongo Cursor object
+    logs = _get_logs(filters=filters,
+                     range_start=search_range_start, range_end=search_range_end,
+                     time_field=params['time_field'])
+
+    message = ""
     if logs is None:
         message = "No module configured to get Shinken logs from database!"
     else:
-        message = ""
+        logger.info("[logs] got %d records.", logs.count())
 
     return {
         'records': logs,
         'params': params,
         'message': message,
-        'range_start': range_start, 'range_end': range_end
+        'range_start': range_start,
+        'range_end': range_end
     }
 
 

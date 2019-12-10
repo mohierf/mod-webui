@@ -12,7 +12,7 @@
 				<div class="form-group">
 					<select id="hosts_list_select" name="logs_typeList[]" class="multiselect" multiple="multiple">
 						%for s in logs_types:
-						%if s in params['logs_type']:
+						%if s in params['events']:
 							<option value="{{s}}" selected="selected">{{s}}</option>
 						%else:
 							<option value="{{s}}">{{s}}</option>
@@ -20,7 +20,7 @@
 						%end
 					</select>
 				</div>
-				
+
 				<div class="form-group">
 					<button class="btn btn-primary" type="submit" name="setList" value="setList" ><i class="glyphicon glyphicon-cog"></i> Configure</button>
 					<button class="btn" type="submit" name="cancel" value="cancel"><i class="glyphicon glyphicon-remove"></i> Cancel</button>
