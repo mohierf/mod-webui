@@ -60,7 +60,7 @@
                %for log in logs:
                   <tr>
                      <td title="{{! helper.print_duration(log.get('timestamp', 0), just_duration=True, x_elts=2)}}">{{log.get('date', '')}}</td>
-                     <td>{{! helper.get_event_icon(log)}} - {{log.get('type', '')}}</td>
+                     <td>{{! helper.get_event_icon(log)}}</td>
                      <td>{{log.get('host_name', '')}}</td>
                      <td>{{log.get('service_name', '')}}</td>
                      <!--<td>{{log.get('user_name', '')}}</td>-->

@@ -199,8 +199,15 @@ def get_global_history():
     _ = user.is_administrator() or app.redirect403()
 
     midnight_timestamp = time.mktime(datetime.date.today().timetuple())
-    range_start = int(app.request.GET.get('range_start', midnight_timestamp))
-    range_end = int(app.request.GET.get('range_end', midnight_timestamp + 86399))
+    try:
+        range_start = int(app.request.GET.get('range_start', midnight_timestamp))
+    except ValueError:
+        range_start = midnight_timestamp
+    try:
+        range_end = int(app.request.GET.get('range_end', midnight_timestamp + 86399))
+    except ValueError:
+        range_end = midnight_timestamp + 86399
+
     logger.debug("[logs] get_global_history, range: %d - %d", range_start, range_end)
 
     logs = _get_logs(filters={'type': {'$in': params['logs_type']}},

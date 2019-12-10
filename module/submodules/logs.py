@@ -213,7 +213,7 @@ class MongoDBLogs(object):
             query.append({'day_ts': {'$lte': range_end}})
 
         query = {'$and': query}
-        logger.debug("[mongo-logs] Fetching records from database with query: '%s'", query)
+        logger.info("[mongo-logs] Fetching records from database with query: '%s'", query)
 
         records = []
         try:

@@ -81,43 +81,59 @@
 </ul>
 <script type="text/javascript">
   $(document).ready(function() {
+    // Initial start/stop range ...
+    var range_start = moment.unix({{range_start}}, 'YYYY-MM-DD');
+    var range_end = moment.unix({{range_end}}, 'YYYY-MM-DD');
+
+    $("#dtr_logs").daterangepicker({
+      ranges: {
+         '1 day':         [moment().add('days', -1), moment()],
+         '2 days':        [moment().add('days', -2), moment()],
+         '1 week':        [moment().add('days', -7), moment()],
+         '1 month':       [moment().add('month', -1), moment()]
+      },
+      format: 'YYYY-MM-DD',
+      separator: ' to ',
+      maxDate: moment(),
+      startDate: range_start,
+      endDate: range_end,
+      timePicker: false,
+      timePickerIncrement: 1,
+      timePicker12Hour: false,
+      showDropdowns: false,
+      showWeekNumbers: false,
+      opens: 'right',
+      },
+      function(start, end, label) {
+        range_start = start; range_end = end;
+    });
+
+    // Set default date range values
+    $('#dtr_logs').val(range_start.format('YYYY-MM-DD') + ' to ' +  range_end.format('YYYY-MM-DD'));
+    $('#range_start').val(range_start.format('X'));
+    $('#range_end').val(range_end.format('X'));
+
+    // Update dates on apply button ...
+    $('#dtr_logs').on('apply.daterangepicker', function(ev, picker) {
+      range_start = picker.startDate;
+      range_end = picker.endDate;
+      $('#range_start').val(range_start.unix());
+      $('#range_end').val(range_end.unix());
+    });
+
     $('.multiselect').multiselect();
   });
-
-  function getHostsList(url){
-    // this code will send a data object via a GET request and alert the retrieved data.
-    $.jsonp({
-      "url": url+'?callback=?',
-      "success": function (response){
-        if (response.status == 200) {
-          alert(response.text);
-        }else{
-          alert(response.text);
-        }
-      },
-      "error": function (response) {
-        alert('Error !');
-      }
-    });
-  }
 </script>
 
 <div class="panel panel-default">
   <div class="panel-body">
-   <script type="text/javascript">
-      // Initial start/stop range ...
-      var range_start = moment.unix({{range_start}}, 'YYYY-MM-DD');
-      // Set default downtime period as two days
-      var range_end = moment.unix({{range_end}}, 'YYYY-MM-DD');
-   </script>
-
    <div class="row row-fluid">
      <div class="col-md-6">
        <form class="form-inline pull-left" role="form" method="get" action="/logs">
          <div class="form-group">
            <div class="input-group">
              <span class="input-group-addon"><i class="fas fa-calendar"></i></span>
-             <input type="text" class="form-control" id="dtr_downtime" placeholder="..." />
+             <input type="text" class="form-control" id="dtr_logs" placeholder="..." />
            </div>
            <input type="hidden" id="range_start" name="range_start" />
            <input type="hidden" id="range_end" name="range_end" />
@@ -150,47 +166,5 @@
    %else:
       No logs found
   %end
-
-
-   <script type="text/javascript">
-      $("#dtr_downtime").daterangepicker({
-         ranges: {
-            '1 day':         [moment().add('days', -1), moment()],
-            '2 days':        [moment().add('days', -2), moment()],
-            '1 week':        [moment().add('days', -7), moment()],
-            '1 month':       [moment().add('month', -1), moment()]
-         },
-         format: 'YYYY-MM-DD',
-         separator: ' to ',
-         maxDate: moment(),
-         startDate: range_start,
-         endDate: range_end,
-         timePicker: false,
-         timePickerIncrement: 1,
-         timePicker12Hour: false,
-         showDropdowns: false,
-         showWeekNumbers: false,
-         opens: 'right',
-         },
-
-         function(start, end, label) {
-            range_start = start; range_end = end;
-         }
-      );
-
-      // Set default date range values
-      $('#dtr_downtime').val(range_start.format('YYYY-MM-DD') + ' to ' +  range_end.format('YYYY-MM-DD'));
-      $('#range_start').val(range_start.format('X'));
-      $('#range_end').val(range_end.format('X'));
-
-      // Update dates on apply button ...
-      $('#dtr_downtime').on('apply.daterangepicker', function(ev, picker) {
-         range_start = picker.startDate; range_end = picker.endDate;
-         console.log(range_start, range_end)
-         $('#range_start').val(range_start.unix());
-         $('#range_end').val(range_end.unix());
-      });
-   </script>
-
   </div>
 </div>
