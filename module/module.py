@@ -195,12 +195,17 @@ class WebuiBroker(BaseModule, Daemon):
                 log_filename = os.path.abspath(
                     os.path.join(getattr(mod_conf, 'logdir', os.getcwd()), log_filename))
 
-            # Configure a timed rotation file logger
-            for hdlr in logger.handlers:
-                if isinstance(hdlr, logging.handlers.TimedRotatingFileHandler):
-                    # We still have a file logger - but this should never happen!
-                    break
-            else:
+            # Check the logger configuration
+            set_handler = True
+            if ALIGNAK:
+                for hdlr in logger.handlers:
+                    if isinstance(hdlr, logging.handlers.TimedRotatingFileHandler):
+                        # We still have a file logger - do not create a new one!
+                        set_handler = False
+                        break
+
+            if set_handler:
+                # Declare and configure a new handler for our logger
                 file_handler = logging.handlers.TimedRotatingFileHandler(
                     log_filename,
                     when=getattr(mod_conf, 'log_rotation_when', 'midnight'),
