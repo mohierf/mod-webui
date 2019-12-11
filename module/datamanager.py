@@ -124,8 +124,10 @@ class WebUIDataManager(object):
         if problem:
             count = host['nb_problems']
 
-        logger.debug("Hosts count: %s / %s / %s", count, host['nb_problems'], host['nb_elts'])
-        return round(100.0 * (count / host['nb_elts']), 1)
+        percentage = round(100.0 * float(count) / float(host['nb_elts']), 1)
+        logger.debug("Hosts count: %s / %s / %s / %s",
+                       count, host['nb_problems'], host['nb_elts'], percentage)
+        return percentage
 
     def get_hosts_synthesis(self, items=None, user=None):
         if items is not None:
@@ -149,12 +151,14 @@ class WebUIDataManager(object):
 
         for state in ['up', 'pending']:
             host_synth['nb_' + state] = sum(1 for host in hosts if host.state == state.upper())
-            host_synth['pct_' + state] = round(100.0 * host_synth['nb_' + state] / host_synth['nb_elts'], 1)
+            host_synth['pct_' + state] = round(
+                100.0 * float(host_synth['nb_' + state]) / float(host_synth['nb_elts']), 1)
         for state in ['down', 'unreachable', 'unknown']:
             host_synth['nb_' + state] = sum(
                 1 for host in hosts if host.state == state.upper()
                 and not (host.problem_has_been_acknowledged or host.in_scheduled_downtime))
-            host_synth['pct_' + state] = round(100.0 * host_synth['nb_' + state] / host_synth['nb_elts'], 1)
+            host_synth['pct_' + state] = round(
+                100.0 * float(host_synth['nb_' + state]) / float(host_synth['nb_elts']), 1)
 
         # Our own computation !
         # ------
@@ -195,13 +199,13 @@ class WebUIDataManager(object):
                 and host.problem_has_been_acknowledged)
 
         host_synth['pct_problems'] = \
-            round(100.0 * host_synth['nb_problems'] / host_synth['nb_elts'], 1)
+            round(100.0 * float(host_synth['nb_problems']) / float(host_synth['nb_elts']), 1)
         host_synth['pct_ack'] = \
-            round(100.0 * host_synth['nb_ack'] / host_synth['nb_elts'], 1)
+            round(100.0 * float(host_synth['nb_ack']) / float(host_synth['nb_elts']), 1)
         host_synth['nb_downtime'] = \
             sum(1 for host in hosts if host.in_scheduled_downtime)
         host_synth['pct_downtime'] = \
-            round(100.0 * host_synth['nb_downtime'] / host_synth['nb_elts'], 1)
+            round(100.0 * float(host_synth['nb_downtime']) / float(host_synth['nb_elts']), 1)
 
         logger.debug("[datamanager] get_hosts_synthesis: %s", host_synth)
         return host_synth
@@ -248,9 +252,10 @@ class WebUIDataManager(object):
         if problem:
             count = service['nb_problems']
 
-        logger.debug("Services count: %s / %s / %s",
-                     count, service['nb_problems'], service['nb_elts'])
-        return round(100.0 * (count / service['nb_elts']), 1)
+        percentage = round(100.0 * (float(count) / float(service['nb_elts'])), 1)
+        logger.debug("Services count: %s / %s / %s / %s",
+                     count, service['nb_problems'], service['nb_elts'], percentage)
+        return percentage
 
     def get_services_synthesis(self, items=None, user=None):
         if items is not None:
@@ -277,14 +282,14 @@ class WebUIDataManager(object):
             svc_synth['nb_' + state] = \
                 sum(1 for service in services if service.state == state.upper())
             svc_synth['pct_' + state] = \
-                round(100.0 * svc_synth['nb_' + state] / svc_synth['nb_elts'], 1)
+                round(100.0 * float(svc_synth['nb_' + state]) / float(svc_synth['nb_elts']), 1)
         for state in ['warning', 'critical', 'unreachable', 'unknown']:
             svc_synth['nb_' + state] = \
                 sum(1 for service in services if service.state == state.upper()
                     and not (service.problem_has_been_acknowledged
                              or service.in_scheduled_downtime))
             svc_synth['pct_' + state] = \
-                round(100.0 * svc_synth['nb_' + state] / svc_synth['nb_elts'], 1)
+                round(100.0 * float(svc_synth['nb_' + state]) / float(svc_synth['nb_elts']), 1)
 
         svc_synth['nb_impacts'] = 0
         # Our own computation !
@@ -326,10 +331,14 @@ class WebUIDataManager(object):
                 sum(1 for service in services if service.is_problem
                     and service.problem_has_been_acknowledged)
 
-        svc_synth['pct_problems'] = round(100.0 * svc_synth['nb_problems'] / svc_synth['nb_elts'], 1)
-        svc_synth['pct_ack'] = round(100.0 * svc_synth['nb_ack'] / svc_synth['nb_elts'], 1)
-        svc_synth['nb_downtime'] = sum(1 for service in services if service.in_scheduled_downtime)
-        svc_synth['pct_downtime'] = round(100.0 * svc_synth['nb_downtime'] / svc_synth['nb_elts'], 1)
+        svc_synth['pct_problems'] = \
+            round(100.0 * float(svc_synth['nb_problems']) / float(svc_synth['nb_elts']), 1)
+        svc_synth['pct_ack'] = \
+            round(100.0 * float(svc_synth['nb_ack']) / float(svc_synth['nb_elts']), 1)
+        svc_synth['nb_downtime'] = \
+            sum(1 for service in services if service.in_scheduled_downtime)
+        svc_synth['pct_downtime'] = \
+            round(100.0 * float(svc_synth['nb_downtime']) / float(svc_synth['nb_elts']), 1)
 
         logger.debug("[datamanager] get_services_synthesis: %s", svc_synth)
         return svc_synth
