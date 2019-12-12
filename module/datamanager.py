@@ -126,7 +126,7 @@ class WebUIDataManager(object):
 
         percentage = round(100.0 * float(count) / float(host['nb_elts']), 1)
         logger.debug("Hosts count: %s / %s / %s / %s",
-                       count, host['nb_problems'], host['nb_elts'], percentage)
+                     count, host['nb_problems'], host['nb_elts'], percentage)
         return percentage
 
     def get_hosts_synthesis(self, items=None, user=None):
