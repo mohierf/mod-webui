@@ -1,4 +1,4 @@
-%rebase("layout", css=['logs/css/logs.css'], js=['logs/js/history.js'], title='Alert Statistics on the last 30 days for ' + service)
+%rebase("layout", css=['logs/css/logs.css'], js=['logs/js/history.js'], title='Alert statistics for the last 30 days for ' + service)
 
 %total = sum(hosts.values())
 
@@ -18,7 +18,10 @@
 <div class="col-xs-12">
   <div class="panel panel-default">
     <div class="panel-body">
-      <div id="inner_history" data-service='{{ service }}' data-logclass="3" data-commandname="{%22$regex%22:%22notify-service-by-slack%22}">
+      <div id="inner_history"
+         data-service='{{ service }}'
+         data-command_name="{%22$regex%22:%22{{ params['command_filter'] }}%22}"
+         data-contact_name="{%22$regex%22:%22{{ params['contact_filter'] }}%22}">
       </div>
 
       <div class="text-center" id="loading-spinner">

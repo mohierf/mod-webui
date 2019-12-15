@@ -1,98 +1,66 @@
-%import time
+%setdefault('navi', None)
+
 %helper = app.helper
+%import time
 
 %date_format='%Y-%m-%d %H:%M:%S'
 
-%if hasattr(records,"__iter__"):
-%for daterange, logs in helper.group_by_daterange(records, key=lambda x: x['time']).items():
-%if logs:
-<div class="daterange-title">{{ daterange }}</div>
+%if not add_more:
+   %if total_records == 0:
+      %include("_no_logs.tpl")
+   %end
    <table class="table table-condensed">
-      <tbody style="font-size:small;">
-         %for log in logs:
+      <colgroup>
+         <col style="width: 10%" />
+         <!-- <col style="width: 90%" /> -->
+      </colgroup>
+      <thead>
          <tr>
-           <td width="150px" style="vertical-align: middle;">{{time.strftime(date_format, time.localtime(log['time']))}}</td>
-           %# STATE CHANGE
-           %if log['logclass'] == 1 and log['state_type'] in ['SOFT', 'HARD']:
-           %state = log['message'].split(';')[2]
-           <td width="40px" class="text-center" style="vertical-align: middle;">
-             <i class="fas fa-warning fa-2x font-{{ state.lower() }}" title="State change"></i>
-           </td>
-           <td width="100px" class="text-center" style="vertical-align: middle;">
-             <strong class="font-{{ state.lower() }}">
-               {{ state }}<br>
-               <small>
-                 {{ log['state_type'] }}
-                 %if log['state_type'] == 'SOFT':
-                 {{ log['attempt'] }}
-                 %end
-               </small>
-             </strong>
-           </td>
-           <td>
-             {{ log['service_description'] }}<br>
-             <samp class="text-muted">{{ log['plugin_output'] }}</samp>
-           </td>
-           %# FLAPPING/DOWNTIME
-           %elif log['logclass'] == 1:
-           <td width="40px" class="text-center" style="vertical-align: middle;">
-             <i class="fas fa-info-circle text-primary fa-2x" title="State change"></i>
-           </td>
-           <td width="100px" class="text-center text-primary" style="vertical-align: middle;">
-             <strong>
-               %if "FLAPPING" in log['message']:
-               FLAPPING<br>
-               %elif "DOWNTIME" in log['message']:
-               DOWNTIME<br>
-               %end
-               {{ log['state_type'] }}<br>
-             </strong>
-           </td>
-           <td>
-             {{ log['service_description'] }}<br>
-             <samp class="text-muted">{{ log['message'].split(';')[-1] }}</samp>
-           </td>
-           %# NOTIFICATION
-           %elif log['logclass'] == 3:
-           %# Not used for now
-           %if 'sms' in log['command_name']:
-           %icon = 'fa-mobile'
-           %elif 'mail' in log['command_name']:
-           %icon = 'fa-envelope'
-           %elif 'slack' in log['command_name']:
-           %icon = 'fa-slack'
-           %else:
-           %icon = 'fa-bell'
-           %end
-           <td width="40px" class="text-center" style="vertical-align: middle;">
-             <i class="fas fa-bell fa-2x font-{{ log['state_type'].lower() }}" title="Notification"></i>
-           </td>
-           <td width="100px" class="text-center" style="vertical-align: middle;">
-             <strong class="font-{{ log['state_type'].lower() }}">
-               {{ log['state_type'] }}
-             </strong>
-           </td>
-           <td>
-             User {{ log['contact_name'] }} notified with <code>{{ log['command_name'] }}</code><br>
-             {{ log['host_name'] }} / {{ log['service_description'] }} &nbsp;&nbsp;&nbsp;&nbsp;
-             <samp class="text-muted">{{ log['message'].split(';')[-1] }}</samp>
-           </td>
-           %else:
-           <td width="40px">
-           </td>
-           <td width="100px">
-           </td>
-           <td>
-             {{ log['message'] }}
-           </td>
-           %end
+            <th colspan="20"><h4>{{message}}</h4></th>
          </tr>
-         %end
+         <tr>
+            <th>{{ params['time_field'] }}</th>
+            %for field in params['other_fields']:
+               <th>{{field}}</th>
+            %end
+         </tr>
+      </thead>
+
+      <tbody style="font-size:x-small;">
+%else:
+      <tr>
+         <td colspan="20"><h4>{{message}}</h4></td>
+      </tr>
+%end
+
+            %for log in records:
+            <tr>
+               %if params['date_format'] == 'timestamp':
+               <td>{{ time.strftime(date_format, time.localtime(log[params['time_field']])) }}</td>
+               %else:
+               <td>{{ log[params['time_field']] }}</td>
+               %end
+
+               %for field in params['other_fields']:
+                  %if '.' in field:
+                  %before = field.split('.')[0]
+                  %after = field.split('.')[1]
+                  %before_value = log.get(before, None)
+                  %value = before_value.get(after, '') if before else ''
+                  %else:
+                  %value = log.get(field, '')
+                  %end
+
+                  %if field in ['host_name']:
+                  <td><a href="/host/{{value}}"> {{value}} </a></td>
+                  %else:
+                  <td>{{value}}</td>
+                  %end
+               %end
+            </tr>
+            %end
+
+%if not add_more:
       </tbody>
    </table>
 %end
-%end
-%else:
-   No logs found
-%end
-

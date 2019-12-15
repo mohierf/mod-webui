@@ -184,26 +184,33 @@ class MongoDBLogs(object):
             query.append({time_field: {'$lte': range_end}})
 
         query = {'$and': query} if len(query) > 1 else query[0]
-        # query = { "_created": {"$gte" : datetime.datetime(2018, 1, 1),
-        #                        "$lt": datetime.datetime(2018, 12, 31)}}
-        logger.info("[mongo-logs] Fetching %d records from collection %s/%s with "
-                    "query: '%s' and offset %s",
-                    limit, self.database, self.logs_collection, query, offset)
+        logger.debug("[mongo-logs] Fetching %d records from collection %s/%s with "
+                     "query: '%s' and offset %s",
+                     limit, self.database, self.logs_collection, query, offset)
 
         records = []
         try:
+            current_records = 0
             if limit:
                 records = self.db[self.logs_collection].find(query).sort([
                     (time_field, pymongo.DESCENDING)]).skip(offset).limit(limit)
+                if records is not None:
+                    current_records = records.collection.count_documents(query, None,
+                                                                         skip=offset, limit=limit)
             else:
                 records = self.db[self.logs_collection].find(query).sort([
                     (time_field, pymongo.DESCENDING)]).skip(offset)
+                if records is not None:
+                    current_records = records.collection.count_documents(query, None)
 
-            logger.info("[mongo-logs] %d records fetched from database.", records.count())
+            total_records = records.collection.count_documents(query, None)
+
+            logger.debug("[mongo-logs] %d records fetched from %s out of %d, offset: %d.",
+                         current_records, self.logs_collection, total_records, offset)
         except Exception as exp:
             logger.error("[mongo-logs] Exception when querying database: %s", str(exp))
 
-        return records
+        return records, query
 
     # We will get in the mongodb database the host availability
     def get_ui_availability(self, elt, range_start=None, range_end=None):

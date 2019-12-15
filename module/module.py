@@ -1338,7 +1338,8 @@ def login_required():
         # Only the /currently should be accessible to anonymous users
         contact_name = 'anonymous'
         if not app.allow_anonymous:
-            logger.info("anonymous access is forbidden. Redirecting to %s", app.get_url("GetLogin"))
+            logger.info("anonymous access is forbidden (%s). Redirecting to %s",
+                        request.urlparts.path, app.get_url("GetLogin"))
             bottle.redirect(app.get_url("GetLogin"))
         if request.urlparts.path not in [app.get_url("Currently")]:
             logger.info("anonymous access is allowed only for the dashboard, not for %s",
