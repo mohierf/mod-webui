@@ -14,7 +14,7 @@
       <div class="panel panel-default">
          <div class="panel-heading">
             <h4 class="panel-title">
-               <a data-toggle="collapse" href="#collapse_commands"><i class="fa fa-paper-plane"></i> Change the configuration</a>
+               <a data-toggle="collapse" href="#collapse_commands"><i class="fas fa-paper-plane"></i> Change the configuration</a>
             </h4>
          </div>
          <div id="collapse_commands" class="panel-collapse collapse in">

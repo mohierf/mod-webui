@@ -512,7 +512,7 @@
                         {{h['nb_elts']}} hosts{{! "<em class='font-down'> (%d problems).</em>" % (h['nb_problems']) if h['nb_problems'] else '.'}}
                     </span>
                     <div class="pull-right">
-                        <a href="#p_panel_counters_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_counters_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_counters_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_counters_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_counters_hosts" class="panel-collapse collapse {{'in' if not panels['panel_counters_hosts']['collapsed'] else ''}}">
@@ -541,7 +541,7 @@
                         {{s['nb_elts']}} services{{! "<em class='font-down'> (%d problems).</em>" % (s['nb_problems']) if s['nb_problems'] else '.'}}
                     </span>
                     <div class="pull-right">
-                        <a href="#p_panel_counters_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_counters_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_counters_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_counters_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_counters_services" class="panel-collapse collapse {{'in' if not panels['panel_counters_services']['collapsed'] else ''}}">
@@ -573,7 +573,7 @@
                         {{h['nb_elts']}} hosts{{! "<em class='font-down'> (%d problems).</em>" % (h['nb_problems']) if h['nb_problems'] else '.'}}
                     </span>
                     <div class="pull-right">
-                        <a href="#p_panel_percentage_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_percentage_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_percentage_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_percentage_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_percentage_hosts" class="panel-collapse collapse {{'in' if not panels['panel_percentage_hosts']['collapsed'] else ''}}">
@@ -639,7 +639,7 @@
                         {{s['nb_elts']}} services{{! "<em class='font-down'> (%d problems).</em>" % (s['nb_problems']) if s['nb_problems'] else '.'}}
                     </span>
                     <div class="pull-right">
-                        <a href="#p_panel_percentage_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_percentage_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_percentage_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_percentage_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_percentage_services" class="panel-collapse collapse {{'in' if not panels['panel_percentage_services']['collapsed'] else ''}}">
@@ -734,7 +734,7 @@
                                 %end
                             </ul>
                         </div>
-                        <a href="#p_panel_pie_graph_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_pie_graph_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_pie_graph_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_pie_graph_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_pie_graph_hosts" class="panel-collapse collapse {{'in' if not panels['panel_pie_graph_hosts']['collapsed'] else ''}}">
@@ -792,7 +792,7 @@
                                 %end
                             </ul>
                         </div>
-                        <a href="#p_panel_pie_graph_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_pie_graph_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_pie_graph_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_pie_graph_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_pie_graph_services" class="panel-collapse collapse {{'in' if not panels['panel_pie_graph_services']['collapsed'] else ''}}">
@@ -850,7 +850,7 @@
                                 %end
                             </ul>
                         </div>
-                        <a href="#p_panel_line_graph_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_line_graph_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_line_graph_hosts" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_line_graph_hosts']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_line_graph_hosts" class="panel-collapse collapse {{'in' if not panels['panel_line_graph_hosts']['collapsed'] else ''}}">
@@ -908,7 +908,7 @@
                                 %end
                             </ul>
                         </div>
-                        <a href="#p_panel_line_graph_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fa {{'fa-minus-square' if not panels['panel_line_graph_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
+                        <a href="#p_panel_line_graph_services" data-toggle="collapse" type="button" class="btn btn-xs"><i class="fas {{'fa-minus-square' if not panels['panel_line_graph_services']['collapsed'] else 'fa-plus-square'}} fa-fw"></i></a>
                     </div>
                 </div>
                 <div id="p_panel_line_graph_services" class="panel-collapse collapse {{'in' if not panels['panel_line_graph_services']['collapsed'] else ''}}">

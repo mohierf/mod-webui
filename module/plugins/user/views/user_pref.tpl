@@ -18,9 +18,9 @@
              {{ !helper.get_contact_avatar(user, with_name=False, with_link=False) }}
              {{ user.get_name() }}
              %if user.is_admin:
-             <i class="fa font-warning fa-star" title="This user is an administrator"></i>
+             <i class="fas font-warning fa-star" title="This user is an administrator"></i>
              %elif app.can_action(username):
-             <i class="fa font-ok fa-star" title="This user is allowed to launch commands"></i>
+             <i class="fas font-ok fa-star" title="This user is allowed to launch commands"></i>
              %end
            </h2>
          </div>

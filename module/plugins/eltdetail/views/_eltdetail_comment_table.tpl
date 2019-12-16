@@ -45,7 +45,7 @@
          %comment_title = 'Acknowledgement'
          %comment_icon = "fa-check"
          %end
-         <i title="{{ comment_title }}" class="text-muted fa {{ comment_icon }} fa-2x"></i>
+         <i title="{{ comment_title }}" class="text-muted fas {{ comment_icon }} fa-2x"></i>
        </td>
        <td>
          %if with_service_name:

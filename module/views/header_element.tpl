@@ -235,9 +235,9 @@
             <li> <a href="{{ app.get_url('System') }}"> <i class="fas fa-fw fa-heartbeat sidebar-icon"></i>
                &nbsp;Status </a> </li>
             %if alignak:
-            <li> <a href="{{ app.get_url('AlignakStatus') }}"> <i class="fa fa-fw fa-heartbeat sidebar-icon"></i>
+            <li> <a href="{{ app.get_url('AlignakStatus') }}"> <i class="fas fa-fw fa-heartbeat sidebar-icon"></i>
                &nbsp;Live state</a> </li>
-            <li> <a href="{{ app.get_url('AlignakEvents') }}"> <i class="fa fa-fw fa-th-list sidebar-icon"></i>
+            <li> <a href="{{ app.get_url('AlignakEvents') }}"> <i class="fas fa-fw fa-th-list sidebar-icon"></i>
                &nbsp;Events log</a> </li>
             %end
             %if app.logs_module.is_available():
@@ -286,6 +286,11 @@
         %end
         <li class="visible-xs">
            <a href="/user/logout" data-toggle="modal" data-target="/user/logout"><i class="fas fa-fw fa-sign-out sidebar-icon"></i> Logout</a>
+        </li>
+        <li class="visible-xs visible-sm">
+           <a href="/currently" title="Dashboard currently">
+             <i class="fas fa-fw fa-eye sidebar-icon"></i>&nbsp;Currently
+           </a>
         </li>
       </ul>
     </div>
