@@ -143,9 +143,9 @@ class MongoDBLogs(object):
             if self.logs_collection not in self.db.collection_names():
                 logger.warning("[mongo-logs] configured logs collection '%s' "
                                "does not exist in the database", self.logs_collection)
-            else:
-                self.is_connected = True
-                logger.info('[mongo-logs] database connection established')
+
+            self.is_connected = True
+            logger.info('[mongo-logs] database connection established')
         except Exception as exp:
             logger.error("[mongo-logs] Exception: %s", str(exp))
             logger.debug("[mongo-logs] Exception type: %s", type(exp))
