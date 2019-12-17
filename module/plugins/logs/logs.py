@@ -95,7 +95,7 @@ params = {
     ],
 
     # Services filtering
-    'logs_services': []
+    'services': []
 }
 
 # Will be populated by the UI with it's own value
@@ -122,21 +122,29 @@ def load_config(the_app):
 
     plugin_configuration = the_app.get_plugin_config('logs')
     for prop, default in list(plugin_configuration.items()):
+        append = False
         # Those are list of strings...
-        if prop in ['other_fields', 'events', 'hosts', 'logs_services']:
+        if prop in ['other_fields', 'events_list', 'events', 'hosts', 'services']:
+            if prop in ['events_list', 'hosts', 'services']:
+                append = True
+
             if ',' in default:
                 default = [item.strip() for item in default.split(',')]
             else:
                 default = [default]
 
-        params[prop] = default
+        if append:
+            params[prop].extend(default)
+        else:
+            params[prop] = default
 
     logger.info("[logs] configuration, timestamp field: %s", params['time_field'])
     logger.info("[logs] configuration, date format: %s", params['date_format'])
     logger.info("[logs] configuration, other fields: %s", params['other_fields'])
+    logger.info("[logs] configuration, events list: %s", params['events_list'])
     logger.info("[logs] configuration, fetching events: %s", params['events'])
     logger.info("[logs] configuration, hosts: %s", params['hosts'])
-    logger.info("[logs] configuration, services: %s", params['logs_services'])
+    logger.info("[logs] configuration, services: %s", params['services'])
 
     logger.info("[logs] configuration loaded.")
 
@@ -167,13 +175,13 @@ def set_services_list():
     if app.request.forms.get('cancel'):
         app.bottle.redirect("/logs")
 
-    params['logs_services'] = []
+    params['services'] = []
 
     services_list = app.request.forms.getall('servicesList[]')
     logger.debug("[logs] Selected services : ")
     for service in services_list:
         logger.debug("[logs] - service : %s", service)
-        params['logs_services'].append(service)
+        params['services'].append(service)
 
     app.bottle.redirect("/logs")
 
