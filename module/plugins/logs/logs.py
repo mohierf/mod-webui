@@ -219,7 +219,6 @@ def get_history():
         range_start = int(app.request.query.get('range_start', ""))
     except ValueError:
         logger.debug("No range start")
-        pass
     search_range_start = range_start
 
     range_end = None
@@ -227,7 +226,6 @@ def get_history():
         range_end = int(app.request.query.get('range_end', ""))
     except ValueError:
         logger.debug("No range end")
-        pass
     search_range_end = range_end
 
     if params['date_format'] in ['datetime']:

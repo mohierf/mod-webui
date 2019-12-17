@@ -389,8 +389,9 @@ def get_service_stats(name):
     logger.info("[stats] query: %s", query)
 
     hosts = Counter()
-    for l in logs:
-        hosts[l['host_name']] += 1
+    for log in logs:
+        hosts[log['host_name']] += 1
+
     return {
         'service': name,
         'hosts': hosts,
@@ -451,19 +452,19 @@ def get_host_stats(name):
 
     hosts = Counter()
     services = Counter()
-    for l in logs:
+    for log in logs:
         # Alignak logstash parser....
-        if 'alignak' in l:
-            l = l['alignak']
-            if 'time' not in l:
-                l['time'] = int(time.mktime(l.pop('timestamp').timetuple()))
+        if 'alignak' in log:
+            log = log['alignak']
+            if 'time' not in log:
+                log['time'] = int(time.mktime(log.pop('timestamp').timetuple()))
 
-            if 'service' in l:
-                l['service_description'] = l.pop('service')
+            if 'service' in log:
+                log['service_description'] = log.pop('service')
 
-        hosts[l['host_name']] += 1
-        if 'service_description' in l:
-            services[l['service_description']] += 1
+        hosts[log['host_name']] += 1
+        if 'service_description' in log:
+            services[log['service_description']] += 1
 
     return {
         'host': name,
