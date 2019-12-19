@@ -243,6 +243,10 @@
             %if app.logs_module.is_available():
             <li> <a href="{{ app.get_url('History') }}"> <i class="fas fa-fw fa-th-list sidebar-icon"></i>
                &nbsp;Logs </a> </li>
+            %if alignak:
+            <li> <a href="{{ app.get_url('AlignakStats') }}"> <i class="fas fa-fw fa-bell sidebar-icon"></i>
+               &nbsp;Alignak alerts </a> </li>
+            %end
             <li> <a href="{{ app.get_url('GlobalStats') }}"> <i class="fas fa-fw fa-bell sidebar-icon"></i>
                &nbsp;Alerts </a> </li>
             %end

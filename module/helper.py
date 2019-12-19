@@ -806,6 +806,42 @@ class Helper(object):
 
         return content
 
+    def get_check_command_html(self, item, command_line):
+        if not item or not item.check_command:
+            return ''
+
+        c_line = getattr(item.check_command, "command_line",
+                         getattr(item.check_command, "command_name", "None"))
+
+        checks_data = [item, item.host] if item.my_type == 'service' else [item]
+        mr = MacroResolver()
+        if ALIGNAK:
+            expanded = mr.resolve_simple_macros_in_string(command_line, checks_data, [], [],
+                                                          item.check_command.args)
+            expanded2 = mr.resolve_simple_macros_in_string(c_line, checks_data, [], [],
+                                                           item.check_command.args)
+        else:
+            expanded = mr.resolve_simple_macros_in_string(command_line, checks_data,
+                                                          item.check_command.args)
+            expanded2 = mr.resolve_simple_macros_in_string(c_line, checks_data,
+                                                           item.check_command.args)
+
+        html_content = '<u>Command line:</u>' \
+                       '<br>' \
+                       '<div style="max-width: 320px; overflow-wrap: break-word;">%s</div>' \
+                       % c_line
+        html_content += '<br>' \
+                        '<u>Command line with macro expansion:</u>' \
+                        '<br>' \
+                        '<div style="max-width: 320px; overflow-wrap: break-word;">%s</div>' \
+                        % expanded
+        html_content += '<br>' \
+                        'Arguments:' \
+                        '<br>%s' % ("<br>&nbsp;&nbsp;".join(item.check_command.args)
+                                                            if item.check_command.args else "None")
+
+        return html_content, expanded, expanded2
+
     def get_contact_avatar(self, contact, size=24, with_name=True, with_link=True):
         name = contact
         title = name

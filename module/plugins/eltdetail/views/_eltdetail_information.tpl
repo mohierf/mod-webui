@@ -143,15 +143,21 @@
             %end
             <tr>
               <td><strong>Check command:</strong></td>
-              <td>
-                %if elt.check_command:
-                <a href="/commands#{{elt.get_check_command()}}">{{elt.get_check_command()}}</a>
-                %else:
+              %if elt.check_command:
+              %cmd = app.datamgr.get_command(elt.get_check_command())
+              %html_content, expanded, expanded2 = helper.get_check_command_html(elt, cmd.command_line)
+
+              <td name="check_command" class="popover-dismiss" data-html="true" data-toggle="popover" data-placement="top"
+                  data-title='<code>{{ getattr(elt.check_command, "command_name", "None") }}</code>'
+                  data-content='{{ html_content }}'>
+                <a href="/commands#{{ elt.get_check_command() }}">
+                  {{ getattr(elt.check_command, "command_name", "None") }}
+                </a>
+                <br><code>{{ expanded2 }}</code>
+              </td>
+              %else:
                 <strong>No check command</strong>
-                %end
-              </td>
-              <td>
-              </td>
+              %end
             </tr>
             %enabled = app.datamgr.get_configuration_parameter('execute_host_checks' if elt_type == 'host' else 'execute_service_checks')
             <tr>
