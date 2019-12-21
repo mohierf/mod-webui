@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/mohierf/mod-webui.svg?branch=develop)](https://travis-ci.org/mohierf/mod-webui)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4ffd8529eda74138a7667e84df8dfea3)](https://www.codacy.com/manual/Shinken_modules/mod-webui?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mohierf/mod-webui&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/mohierf/mod-webui/branch/develop/graph/badge.svg)](https://codecov.io/gh/mohierf/mod-webui)
+
 # Shinken Web User Interface, version 2
 
 ## Description

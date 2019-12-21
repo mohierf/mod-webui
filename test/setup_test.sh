@@ -1,23 +1,6 @@
 #!/usr/bin/env bash
-#
-# Copyright (C) 2015-2015: Alignak team, see AUTHORS.txt file for contributors
-#
-# This file is part of Alignak.
-#
-# Alignak is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Alignak is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with Alignak.  If not, see <http://www.gnu.org/licenses/>.
-
 set -e
+set -xv
 
 THIS_PATH=$(dirname "$0")
 BASE_PATH=$(dirname "$THIS_PATH")
@@ -27,17 +10,45 @@ cd $BASE_PATH
 echo 'Upgrade pip ...'
 pip install --upgrade pip
 
-# install program AND tests requirements :
-echo 'Installing application requirements ...'
-pip install -r requirements.txt
-# echo 'Installing application in development mode ...'
-# pip install -e .
-echo 'Installing tests requirements ...'
-pip install --upgrade -r test/requirements.txt
+# Module name
+name=webui
+echo "Module name: $name"
 
-pyversion=$(python -c "import sys; print(''.join(map(str, sys.version_info[:2])))")
-if test -e "test/requirements.py${pyversion}.txt"
+# Python version
+py_version_short=$(python -c "import sys; print(''.join(str(x) for x in sys.version_info[:2]))")
+# -> 27 or 34 or ..
+echo "Python version: $py_version_short"
+
+# Clone and configure Shinken
+SHI_DST=test/tmp/shinken
+# Extend the test configurations with the modules one
+if [ -d "$SHI_DST" ]
 then
-    pip install -r "test/requirements.py${pyversion}.txt"
+   echo "Shinken is still cloned"
+else
+   git clone --depth 10 https://github.com/naparuba/shinken.git "$SHI_DST"
+fi
+( cd "$SHI_DST" && git status && git log -1)
+
+echo 'Installing Shinken tests requirements...'
+(
+    cd "$SHI_DST"
+    pip install -r test/requirements.txt
+    if [ -f "test/${spec_requirement}" ]
+    then
+        pip install -r "test/${spec_requirement}"
+    fi
+)
+
+echo 'Installing tests requirements + application requirements...'
+pip install --upgrade -r test/requirements.txt
+if [ -f "test/requirements.py${py_version_short}.txt" ]
+then
+    pip install -r "test/requirements.py${py_version_short}.txt"
 fi
 
+# Map module directory to the Shinken test modules directory
+if [ ! -d "$SHI_DST/test/modules/$name" ]
+then
+   ln -s "$PWD/module" "$SHI_DST/test/modules/$name"
+fi

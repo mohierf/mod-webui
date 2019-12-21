@@ -1,53 +1,33 @@
-dist: xenial   # required for Python >= 3.7
+os: linux
 language: python
-sudo: true
 python:
-  - '3.7'
-  - '3.6'
-  - '3.5'
   - "2.7"
 
 services:
   - mongodb
 
-# command to install dependencies
-# some are only used for travis/coveralls so we are installing them here only
 install:
-  - bash test/setup_test.sh
+  # Required to install Shinken
+  - sudo apt-get update && sudo apt-get install -y python-pip libgnutls28-dev libssl-dev
+  - ./test/setup_test.sh
 
 script:
-  - pip freeze
+  # Unit tests
+  - cur_dir=$PWD
+  - echo "Current directory '$cur_dir' ..."
+  - export PYTHONPATH=$PYTHONPATH:$PWD
+  - export PYTHONPATH=$PYTHONPATH:$PWD/test/tmp/shinken # we also need shinken test/modules...
+  - export PYTHONPATH=$PYTHONPATH:$PWD/test/tmp/shinken/test # we also need shinken test/modules...
+  - echo "Python path '$PYTHONPATH' ..."
+  - cd test/tmp/shinken/test
+  - pytest -vv --durations=0 --no-print-logs --cov="$cur_dir"/module --cov-report=xml --cov-config "$cur_dir"/test/.coveragerc "$cur_dir"/test/test_*.py
+
   # Static code analysis
+  - cd "$cur_dir"
   # -- pycodestyle (former pep8)
-  # Ignore import order (plugins require this)
-  # Ignore line break before binary operator
   - pycodestyle --max-line-length=120 --ignore=E402,W503 --exclude='*.pyc' module
   # -- pylint
   - pylint --rcfile=.pylintrc -r no module
-  # -- pep257
-  #  - pep257 --select=D300 alignak_module_webui
-  # Unit tests
-  # - cd test
-  # - nosetests -xv --process-restartworker --processes=1 --process-timeout=300 --with-coverage --cover-package=module test*.py
-  # - coverage combine
-  # - coverage report -m
-  # - cd ..
 
-#after_success:
-#  # to get coverage data with relative paths and not absolute we have to
-#  # execute coveralls from the base directory of the project,
-#  # so we need to move the .coverage file here :
-#  mv test/.coverage . && coveralls --rcfile=test/.coveragerc -v
-
-jobs:
-  include:
-    - stage: Coding standard
-      python: 3.5
-      script:
-        # Static code analysis
-        # -- pycodestyle (former pep8)
-        - pycodestyle --max-line-length=120 --ignore=E402,W503 --exclude='*.pyc' module
-        # -- pylint
-        - pylint --rcfile=.pylintrc -r no module
-        # -- pep257
-        # - pep257 --select=D300 alignak
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -f test/tmp/shinken/test/coverage.xml

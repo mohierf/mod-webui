@@ -837,8 +837,8 @@ class Helper(object):
                         % expanded
         html_content += '<br>' \
                         'Arguments:' \
-                        '<br>%s' % ("<br>&nbsp;&nbsp;".join(item.check_command.args)
-                                                            if item.check_command.args else "None")
+                        '<br>%s' \
+                        % ("<br>&nbsp;&nbsp;".join(item.check_command.args) if item.check_command.args else "None")
 
         return html_content, expanded, expanded2
 
@@ -1140,8 +1140,7 @@ class Helper(object):
         return 0
 
     def get_event_icon(self, event, disabled=False, label='', use_title=True):
-        '''
-            Get an Html formatted string to display a monitoring event
+        """ Get an Html formatted string to display a monitoring event
 
             If disabled is True, the font used is greyed
 
@@ -1153,7 +1152,7 @@ class Helper(object):
 
             Returns a span element containing a Font Awesome icon that depicts
            consistently the event and its state
-        '''
+        """
         cls = event.get('type', 'unknown').lower()
         state = event.get('state', 'n/a').upper()
         state_type = event.get('state_type', 'n/a').upper()

@@ -41,16 +41,16 @@ class MetaModule(object):
         self.modules = modules
         self.app = app
         if not modules:
-            logger.info("No module for %s. %s", self.__class__.__name__, self._custom_log)
+            logger.info("No extra module for %s. %s", self.__class__.__name__, self._custom_log)
 
     def is_available(self):
-        ''' Is the MetaModule available? Checks if the MetaModule have at least one module. '''
+        """ Is the MetaModule available? Checks if the MetaModule have at least one module. """
         return bool(self.modules)
 
     @classmethod
     def find_modules(cls, modules):
-        ''' Filter the modules and returns only the modules that contains the
-            methods listed in `_functions`. '''
+        """ Filter the modules and returns only the modules that contains the
+            methods listed in `_functions`. """
         logger.debug("searching module containing %s", ', '.join(cls._functions))
         mods = []
         for mod in modules:

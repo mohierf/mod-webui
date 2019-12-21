@@ -22,9 +22,12 @@
 #
 # This file is used to test reading and processing of config files
 #
+from __future__ import print_function
 
+import time
 from shinken_test import *
 from shinken.modulesctx import modulesctx
+print("Shinken modules dir: %s" % modules_dir)
 modulesctx.set_modulesdir(modules_dir)
 webui = modulesctx.get_module('webui')
 helper = webui.helper
@@ -39,158 +42,176 @@ class TestUIHelper(ShinkenTest):
 
         # Got bogus return
         s = helper.print_duration(None)
-        print "Res", s
-        self.assert_(s == 'N/A')
+        print("Res", s)
+        self.assertTrue(s == 'N/A')
         s = helper.print_duration(0)
-        print "Res", s
-        self.assert_(s == 'N/A')
+        print("Res", s)
+        self.assertTrue(s == 'N/A')
 
         # Get the Now
         s = helper.print_duration(now)
-        print "Res", s
-        self.assert_(s == 'Now')
+        print("Res", s)
+        self.assertTrue(s == 'Now')
 
         # Go PAST
         # Get the 2s ago
         s = helper.print_duration(now - 2)
-        print "Res", s
-        self.assert_(s == '2s ago')
+        print("Res", s)
+        self.assertTrue(s == '2s ago')
 
         # Ask only the furation string
         s = helper.print_duration(now - 2, just_duration=True)
-        print "Res", s
-        self.assert_(s == '2s')
+        print("Res", s)
+        self.assertTrue(s == '2s')
 
         # Got 2minutes
         s = helper.print_duration(now - 120)
-        print "Res", s
-        self.assert_(s == '2m ago')
+        print("Res", s)
+        self.assertTrue(s == '2m ago')
 
         # Go 2hours ago
         s = helper.print_duration(now - 3600*2)
-        print "Res", s
-        self.assert_(s == '2h ago')
+        print("Res", s)
+        self.assertTrue(s == '2h ago')
 
         # Go 2 days ago
         s = helper.print_duration(now - 3600*24*2)
-        print "Res", s
-        self.assert_(s == '2d ago')
+        print("Res", s)
+        self.assertTrue(s == '2d ago')
 
         # Go 2 weeks ago
         s = helper.print_duration(now - 86400*14)
-        print "Res", s
-        self.assert_(s == '2w ago')
+        print("Res", s)
+        self.assertTrue(s == '2w ago')
 
         # Go 2 months ago
         s = helper.print_duration(now - 86400*56)
-        print "Res", s
-        self.assert_(s == '2M ago')
+        print("Res", s)
+        self.assertTrue(s == '2M ago')
 
         # Go 1 year ago
         s = helper.print_duration(now - 86400*365*2)
-        print "Res", s
-        self.assert_(s == '2y ago')
+        print("Res", s)
+        self.assertTrue(s == '2y ago')
 
         # Now a mix of all of this :)
         s = helper.print_duration(now - 2 - 120 - 3600*2 - 3600*24*2 - 86400*14 - 86400*56)
-        print "Res", s
-        self.assert_(s == '2M 2w 2d 2h 2m 2s ago')
+        print("Res", s)
+        self.assertTrue(s == '2M 2w 2d 2h 2m 2s ago')
 
         # Now with a limit, because here it's just a nightmare to read
         s = helper.print_duration(now - 2 - 120 - 3600*2 - 3600*24*2 - 86400*14 - 86400*56, x_elts=2)
-        print "Res", s
-        self.assert_(s == '2M 2w ago')
+        print("Res", s)
+        self.assertTrue(s == '2M 2w ago')
 
         # Return to the future
         # Get the 2s ago
         s = helper.print_duration(now + 2)
-        print "Res", s
-        self.assert_(s == 'in 2s')
+        print("Res", s)
+        self.assertTrue(s == 'in 2s')
 
         # Got 2minutes
         s = helper.print_duration(now + 120)
-        print "Res", s
-        self.assert_(s == 'in 2m')
+        print("Res", s)
+        self.assertTrue(s == 'in 2m')
 
         # Go 2hours ago
         s = helper.print_duration(now + 3600*2)
-        print "Res", s
-        self.assert_(s == 'in 2h')
+        print("Res", s)
+        self.assertTrue(s == 'in 2h')
 
         # Go 2 days ago
         s = helper.print_duration(now + 3600*24*2)
-        print "Res", s
-        self.assert_(s == 'in 2d')
+        print("Res", s)
+        self.assertTrue(s == 'in 2d')
 
         # Go 2 weeks ago
         s = helper.print_duration(now + 86400*14)
-        print "Res", s
-        self.assert_(s == 'in 2w')
+        print("Res", s)
+        self.assertTrue(s == 'in 2w')
 
         # Go 2 months ago
         s = helper.print_duration(now + 86400*56)
-        print "Res", s
-        self.assert_(s == 'in 2M')
+        print("Res", s)
+        self.assertTrue(s == 'in 2M')
 
         # Go 1 year ago
         s = helper.print_duration(now + 86400*365*2)
-        print "Res", s
-        self.assert_(s == 'in 2y')
+        print("Res", s)
+        self.assertTrue(s == 'in 2y')
 
         # Now a mix of all of this :)
         s = helper.print_duration(now + 2 + 120 + 3600*2 + 3600*24*2 + 86400*14 + 86400*56)
-        print "Res", s
-        self.assert_(s == 'in 2M 2w 2d 2h 2m 2s')
+        print("Res", s)
+        self.assertTrue(s == 'in 2M 2w 2d 2h 2m 2s')
 
         # Now with a limit, because here it's just a nightmare to read
         s = helper.print_duration(now + 2 - 120 + 3600*2 + 3600*24*2 + 86400*14 + 86400*56, x_elts=2)
-        print "Res", s
-        self.assert_(s == 'in 2M 2w')
+        print("Res", s)
+        self.assertTrue(s == 'in 2M 2w')
 
-    def test_dep_graph(self):
-        now = time.time()
-
-        host = self.sched.hosts.find_by_name("test_host_0")
-        print host.parent_dependencies
-        struc = helper.get_dep_graph_struct(host)
-        print struc
-        j = helper.create_json_dep_graph(host)
-        print j
-
-        all_elts = helper.get_all_linked_elts(host)
-        print "All elts", all_elts
+    # Function removed from the Helper class
+    # def test_dep_graph(self):
+    #     now = time.time()
+    #
+    #     host = self.sched.hosts.find_by_name("test_host_0")
+    #     print(host.parent_dependencies)
+    #     struc = helper.get_dep_graph_struct(host)
+    #     print(struc)
+    #     j = helper.create_json_dep_graph(host)
+    #     print(j)
+    #
+    #     all_elts = helper.get_all_linked_elts(host)
+    #     print("All elts", all_elts)
 
     # Try the navi pages helper
     def test_navi(self):
         res = helper.get_navi(135, 60, step=30)
-        #print "Res 1", res
-        g = [(u'« First', 0, 30, False), ('...', None, None, False), ('2', 30, 60, False), ('3', 60, 90, True), ('4', 90, 120, False), ('...', None, None, False), (u'Last »', 120, 150, False)]
+        g = [
+            ('«', 0, 30, False),
+            ('...', None, None, False),
+            ('2', 30, 60, False),
+            ('3', 60, 90, True),
+            ('4', 90, 120, False),
+            ('...', None, None, False),
+            ('»', 120, 135, False)]
         for i in res:
-            print "Is okk?", i, i in g
-        self.assert_(res == g)
+            print("Is ok?", i, i in g)
+        self.assertTrue(res == g)
 
         res = helper.get_navi(135, 90, step=30)
-        #print "Res 2", res
-        g = [(u'« First', 0, 30, False), ('...', None, None, False), ('3', 60, 90, False), ('4', 90, 120, True), ('5', 120, 150, False)]
-        self.assert_(res == g)
+        g = [
+            ('«', 0, 30, False),
+            ('...', None, None, False),
+            ('3', 60, 90, False),
+            ('4', 90, 120, True),
+            ('5', 120, 150, False)]
+        for i in res:
+            print("Is ok?", i, i in g)
+        self.assertTrue(res == g)
 
         res = helper.get_navi(2035, 1500, step=100)
-        #print "REs3", res
-        g = [(u'« First', 0, 100, False), ('...', None, None, False), ('15', 1400, 1500, False), ('16', 1500, 1600, True), ('17', 1600, 1700, False), ('...', None, None, False), (u'Last »', 2000, 2100, False)]
-        self.assert_(res == g)
+        g = [
+            ('«', 0, 100, False),
+            ('...', None, None, False),
+            ('15', 1400, 1500, False),
+            ('16', 1500, 1600, True),
+            ('17', 1600, 1700, False),
+            ('...', None, None, False),
+            ('»', 2000, 2035, False)]
+        for i in res:
+            print("Is ok?", i, i in g)
+        self.assertTrue(res == g)
 
         # Now the case just one page
         res = helper.get_navi(25, 0, step=30)
-        #print "Res 4", res
-        self.assert_(res == None)
+        print("Res: %s" % res)
+        g = [('1', 0, 30, True)]
+        self.assertTrue(res == g)
 
         # Now just two pages
         res = helper.get_navi(50, 0, step=30)
-        #print "Res 5", res
-        g = [('1', 0.0, 30.0, True), ('2', 30.0, 60.0, False)]
-        self.assert_(res == g)
-
-
-
-if __name__ == '__main__':
-    unittest.main()
+        g = [
+            ('1', 0.0, 30.0, True),
+            ('2', 30.0, 60.0, False)]
+        self.assertTrue(res == g)

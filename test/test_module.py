@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import tempfile, unittest
+import tempfile
+import unittest
 from module import module
 
-class Conf(object): pass
+
+class Conf(object):
+    pass
+
 
 class TestResolveAuthSecret(unittest.TestCase):
     def test_auth_secret_is_sufficient(self):

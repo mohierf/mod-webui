@@ -191,10 +191,30 @@ def get_alignak_stats():
 
     logger.info("Get Alignak stats")
 
-    days = int(app.request.GET.get('days', params['days']))
+    try:
+        days = int(app.request.GET.get('days', params['days']))
+    except ValueError:
+        days = 30
+    try:
+        range_end = int(app.request.GET.get('range_end', time.time()))
+    except ValueError:
+        range_end = int(time.time())
+    search_range_end = range_end
+    try:
+        range_start = int(app.request.GET.get('range_start', range_end - (days * 86400)))
+    except ValueError:
+        range_start = range_end - (days * 86400)
+    search_range_start = range_start
 
-    range_end = int(app.request.GET.get('range_end', time.time()))
-    range_start = int(app.request.GET.get('range_start', range_end - (days * 86400)))
+    if params['date_format'] in ['datetime']:
+        # Assuming UTC timestamps!
+        search_range_start = datetime.utcfromtimestamp(range_start)
+        search_range_end = datetime.utcfromtimestamp(range_end)
+
+    logger.debug("[stats] get_global_stats, range: %d - %d", search_range_start, search_range_end)
+    logger.debug("[stats] get_global_stats, range: %s - %s",
+                 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(search_range_start)),
+                 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(search_range_end)))
 
     # Restrictive filter on contact name
     filters = ['notification']

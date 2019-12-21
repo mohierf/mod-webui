@@ -4,13 +4,8 @@
 import os
 import traceback
 
-import pymongo
-
-try:
-    from pymongo import MongoClient
-except ImportError:
-    print('[mongo-logs] Can not import pymongo.MongoClient')
-    raise
+from pymongo import MongoClient, ASCENDING, DESCENDING
+from pymongo.errors import ConnectionFailure
 
 from .metamodule import MetaModule
 
@@ -123,16 +118,22 @@ class MongoDBLogs(object):
                            "The Web UI system log and availability features will not be available.")
 
     def open(self):
+        """Connect to the Mongo DB with configured URI.
+
+        Execute a command to check if connected on master to activate immediate
+        connection to the DB because we need to know if the DB server is available.
+
+        Check if the configured logs collection exist to warn if not
+        """
+        logger.info("trying to connect MongoDB: %s", self.uri)
+        self.con = MongoClient(self.uri, connect=False)
         try:
-            if self.replica_set:
-                self.con = MongoClient(self.uri, replicaSet=self.replica_set,
-                                       fsync=self.mongodb_fsync, connect=True)
-            else:
-                self.con = MongoClient(self.uri, fsync=self.mongodb_fsync, connect=True)
-            logger.info("[mongo-logs] connected to mongodb: %s", self.uri)
+            result = self.con.admin.command("ismaster")
+            logger.info("[mongo-logs] connected to MongoDB, admin: %s", result)
+            logger.debug("server information: %s", self.con.server_info())
 
             self.db = getattr(self.con, self.database)
-            logger.info("[mongo-logs] connected to the database: %s", self.database)
+            logger.info("[mongo-logs] connected to the database: %s (%s)", self.database, self.db)
 
             if self.username and self.password:
                 self.db.authenticate(self.username, self.password)
@@ -146,6 +147,9 @@ class MongoDBLogs(object):
 
             self.is_connected = True
             logger.info('[mongo-logs] database connection established')
+        except ConnectionFailure as exp:
+            logger.error("[mongo-logs] database server is not available: %s", str(exp))
+            self.is_connected = False
         except Exception as exp:
             logger.error("[mongo-logs] Exception: %s", str(exp))
             logger.debug("[mongo-logs] Exception type: %s", type(exp))
@@ -157,8 +161,10 @@ class MongoDBLogs(object):
         return self.is_connected
 
     def close(self):
+        """Close the DB connection"""
         self.is_connected = False
         self.con.close()
+        logger.info('[mongo-logs] database connection closed')
 
     # We will get in the mongodb database the logs
     def get_ui_logs(self, filters=None, range_start=None, range_end=None,
@@ -193,13 +199,13 @@ class MongoDBLogs(object):
             current_records = 0
             if limit:
                 records = self.db[self.logs_collection].find(query).sort([
-                    (time_field, pymongo.DESCENDING)]).skip(offset).limit(limit)
+                    (time_field, DESCENDING)]).skip(offset).limit(limit)
                 if records is not None:
                     current_records = records.collection.count_documents(query, None,
                                                                          skip=offset, limit=limit)
             else:
                 records = self.db[self.logs_collection].find(query).sort([
-                    (time_field, pymongo.DESCENDING)]).skip(offset)
+                    (time_field, DESCENDING)]).skip(offset)
                 if records is not None:
                     current_records = records.collection.count_documents(query, None)
 
@@ -237,9 +243,7 @@ class MongoDBLogs(object):
         records = []
         try:
             for log in self.db[self.hav_collection].find(query).sort(
-                    [("day", pymongo.DESCENDING),
-                     ("hostname", pymongo.ASCENDING),
-                     ("service", pymongo.ASCENDING)]):
+                    [("day", DESCENDING), ("hostname", ASCENDING), ("service", ASCENDING)]):
                 if '_id' in log:
                     del log['_id']
                 records.append(log)
