@@ -523,7 +523,10 @@
                             %if not user.is_anonymous():
                             <a role="button" href="/all?search=type:host is:{{state}} isnot:ack isnot:downtime">
                             %end
-                                <span class="hosts-count font-{{state.lower()}}" data-count="{{ h['nb_' + state] }}" data-state="{{ state }}" style="font-size: 3em;">{{ h['nb_' + state] }}</span>
+                                <span class="hosts-count font-{{state.lower()}}"
+                                    title="{{state}}"
+                                    data-count="{{ h['nb_' + state] }}"
+                                    data-state="{{ state }}" style="font-size: 3em;">{{ h['nb_' + state] }}</span>
                             %if not user.is_anonymous():
                             </a>
                             %end
@@ -546,13 +549,21 @@
                 </div>
                 <div id="p_panel_counters_services" class="panel-collapse collapse {{'in' if not panels['panel_counters_services']['collapsed'] else ''}}">
                     <div class="panel-body">
-                        %for state in 'ok', 'warning', 'critical':
+                        %if app.alignak:
+                        %states=['ok', 'warning', 'critical', 'unreachable', 'pending', 'unknown' ]
+                        %else:
+                        %states=['ok', 'warning', 'critical', 'pending', 'unknown']
+                        %end
+                        %for state in states:
                         <div class="col-xs-6 col-md-4 text-center">
                             %label = "%d<br/><em>(%s)</em>" % (s['nb_' + state], state)
                             %if not user.is_anonymous():
                             <a role="button" href="/all?search=type:service is:{{state}} isnot:ack isnot:downtime">
                             %end
-                                <span class="services-count font-{{state.lower()}}" data-count="{{ s['nb_' + state] }}" data-state="{{ state }}" style="font-size: 3em;">{{ s['nb_' + state] }}</span>
+                                <span class="services-count font-{{state}}"
+                                    title="{{state}}"
+                                    data-count="{{ s['nb_' + state] }}"
+                                    data-state="{{ state }}" style="font-size: 3em;">{{ s['nb_' + state] }}</span>
                             %if not user.is_anonymous():
                             </a>
                             %end
