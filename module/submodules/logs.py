@@ -76,13 +76,10 @@ class MongoDBLogs(object):
         self.uri = getattr(mod_conf, 'uri', 'mongodb://localhost')
         logger.info('[mongo-logs] mongo uri: %s', self.uri)
 
-        self.replica_set = getattr(mod_conf, 'replica_set', None)
-        if self.replica_set and int(pymongo.version[0]) < 3:
-            logger.error('[mongo-logs] Can not initialize module with '
-                         'replica_set because your pymongo lib is too old. '
-                         'Please install it with a 3.x+ version from '
-                         'https://pypi.python.org/pypi/pymongo')
-            return
+        self.replica_set = getattr(mod_conf, "replica_set", None)
+        if self.replica_set:
+            logger.warning("[mongo-logs] do not use the replica_set parameter anymore. "
+                           "Please use a mongodb:// uri to declare your mongo cluster.")
 
         self.database = getattr(mod_conf, 'database', 'shinken')
         if ALIGNAK:
@@ -106,16 +103,11 @@ class MongoDBLogs(object):
         self.db = None
 
         if not self.uri:
-            logger.warning("[mongo-logs] No Mongodb connection configured!")
-            return
-
-        if self.uri:
-            logger.info("[mongo-logs] Trying to open a Mongodb connection to %s, "
-                        "database: %s", self.uri, self.database)
-            self.open()
-        else:
             logger.warning("You do not have any MongoDB connection for log module installed. "
                            "The Web UI system log and availability features will not be available.")
+            return
+
+        self.open()
 
     def open(self):
         """Connect to the Mongo DB with configured URI.
@@ -125,15 +117,18 @@ class MongoDBLogs(object):
 
         Check if the configured logs collection exist to warn if not
         """
-        logger.info("trying to connect MongoDB: %s", self.uri)
+        logger.info("[mongo-logs] Trying to open a Mongodb connection to %s, database: %s",
+                    self.uri, self.database)
+
         self.con = MongoClient(self.uri, connect=False)
         try:
             result = self.con.admin.command("ismaster")
-            logger.info("[mongo-logs] connected to MongoDB, admin: %s", result)
+            logger.info("[mongo-logs] connected to MongoDB")
+            logger.debug("admin: %s", result)
             logger.debug("server information: %s", self.con.server_info())
 
             self.db = getattr(self.con, self.database)
-            logger.info("[mongo-logs] connected to the database: %s (%s)", self.database, self.db)
+            logger.info("[mongo-logs] connected to the database: %s", self.database)
 
             if self.username and self.password:
                 self.db.authenticate(self.username, self.password)
@@ -169,12 +164,10 @@ class MongoDBLogs(object):
     # We will get in the mongodb database the logs
     def get_ui_logs(self, filters=None, range_start=None, range_end=None,
                     limit=200, offset=0, time_field="time"):
-        if not self.uri:
-            return None
-
-        if not self.db:
-            logger.error("[mongo-logs] error Problem during init phase, no database connection")
-            return []
+        if not self.is_connected:
+            if not self.open():
+                logger.error("[mongo-logs] error during initialization, no database connection!")
+                return [], ""
 
         logger.debug("[mongo-logs] get_ui_logs")
 
@@ -220,12 +213,10 @@ class MongoDBLogs(object):
 
     # We will get in the mongodb database the host availability
     def get_ui_availability(self, elt, range_start=None, range_end=None):
-        if not self.uri:
-            return None
-
-        if not self.db:
-            logger.error("[mongo-logs] error Problem during init phase, no database connection")
-            return []
+        if not self.is_connected:
+            if not self.open():
+                logger.error("[mongo-prefs] error during initialization, no database connection!")
+                return None
 
         logger.debug("[mongo-logs] get_ui_availability, name: %s", elt)
 
