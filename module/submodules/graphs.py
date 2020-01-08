@@ -26,7 +26,7 @@ class GraphsMetaModule(MetaModule):
 
     _functions = ['get_graph_uris']
     _custom_log = "You should configure the module 'graphite' in your broker and " \
-                  "the module 'ui-graphite' in webui.cfg file to be able to display graphs."
+                  "the module 'ui-graphite' in the Webui to be able to display graphs."
 
     def __init__(self, modules, app):
         super(GraphsMetaModule, self).__init__(modules=modules, app=app)

@@ -264,7 +264,7 @@ def get_history():
             filters[params['host_name_field']] = host
 
     command_filter = app.request.query.get('command_filter', None)
-    logger.info("[logs] command filter: %s", command_filter)
+    logger.debug("[logs] command filter: %s", command_filter)
     if command_filter:
         try:
             command_filter = json.loads(command_filter)
@@ -273,6 +273,7 @@ def get_history():
         filters[params['command_name_field']] = command_filter
 
     contact_filter = app.request.query.get('contact_filter', None)
+    logger.debug("[logs] contact filter: %s", contact_filter)
     if contact_filter:
         try:
             contact_filter = json.loads(contact_filter)
