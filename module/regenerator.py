@@ -51,6 +51,8 @@ if ALIGNAK:
 
     from alignak.message import Message
 
+    from alignak.misc.serialization import get_alignak_class
+
     # Import all objects we will need
     from alignak.objects.item import Items
     from alignak.objects.host import Host, Hosts
@@ -62,7 +64,7 @@ if ALIGNAK:
     from alignak.objects.notificationway import NotificationWay, NotificationWays
     # from alignak.objects.realm import Realm, Realms
     from alignak.objects.timeperiod import Timeperiod, Timeperiods
-    from alignak.daterange import Timerange
+    from alignak.daterange import Daterange, Timerange
     from alignak.objects.command import Command, Commands
     from alignak.commandcall import CommandCall
     from alignak.objects.schedulerlink import SchedulerLink, SchedulerLinks
@@ -714,7 +716,7 @@ class Regenerator(object):
     def linkify_a_command(self, o, prop):
         """We look for o.prop (CommandCall) and we link the inner
         Command() object with our real ones"""
-        logger.debug("Linkify a command: %s", prop)
+        logger.debug("Linkify a command: %s / %s", prop, o)
         cc = getattr(o, prop, None)
         if not cc:
             setattr(o, prop, None)
@@ -722,19 +724,32 @@ class Regenerator(object):
 
         # WebUI - the command may have different representation
         # (a simple name, an object or a simple identifier)
+        logger.debug("- command: %s", cc)
         cmd_name = cc
-        if isinstance(cc, CommandCall):
-            cmd_name = cc.command
-        try:
-            cc.command = self.commands.find_by_name(cmd_name)
-            logger.debug("- %s = %s", prop, cc.command.get_name() if cc.command else 'None')
-        except AttributeError:
-            cc = self.commands.find_by_name(cmd_name)
-            logger.debug("- %s = %s", prop, cc.get_name() if cc else 'None')
+        if isinstance(cc, dict) and '__sys_python_module__' in cc:
+            cls = get_alignak_class(cc['__sys_python_module__'])
+            cc = cls(cc['content'], parsing=False)
+            if '__sys_python_module__' in cc.command:
+                cls = get_alignak_class(cc.command['__sys_python_module__'])
+                cmd = cls(cc.command['content'], parsing=False)
+                cc.command = self.commands.find_by_name(cmd.get_name())
+                logger.debug("- %s = %s", prop, cc.command.get_name() if cc.command else 'None')
+        else:
+            if isinstance(cc, CommandCall):
+                cmd_name = cc.command
+            try:
+                cc.command = self.commands.find_by_name(cmd_name)
+                logger.debug("- %s = %s", prop, cc.command.get_name() if cc.command else 'None')
+            except AttributeError:
+                cc = self.commands.find_by_name(cmd_name)
+                logger.debug("- exc %s = %s", prop, cc.get_name() if cc else 'None')
+
+        logger.debug("-> %s (%s)", prop, cc)
+        setattr(o, prop, cc)
 
     def linkify_commands(self, o, prop):
         """We look at o.prop and for each command we relink it"""
-        logger.debug("Linkify commands: %s", prop)
+        logger.debug("Linkify commands: %s / %s", prop, o)
         v = getattr(o, prop, None)
         if not v:
             # If do not have a command list, put a void list instead
@@ -742,15 +757,24 @@ class Regenerator(object):
             return
 
         for cc in v:
-            # WebUI - the command must has different representation
+            logger.debug("- command: %s", cc)
+            # WebUI - the command may have different representation
             # (a simple name, an object or a simple identifier)
             cmdname = cc
-            if hasattr(cc, 'command'):
-                cmdname = cc.command
-            if hasattr(cmdname, 'uuid') and cmdname.uuid in self.commands:
-                cc.command = self.commands[cmdname.uuid]
+            if '__sys_python_module__' in cc:
+                cls = get_alignak_class(cc['__sys_python_module__'])
+                cc = cls(cc['content'], parsing=False)
+                if '__sys_python_module__' in cc.command:
+                    cls = get_alignak_class(cc.command['__sys_python_module__'])
+                    cmd = cls(cc.command['content'], parsing=False)
+                    cc.command = self.commands.find_by_name(cmd.get_name())
             else:
-                cc.command = self.commands.find_by_name(cmdname)
+                if hasattr(cc, 'command'):
+                    cmdname = cc.command
+                if hasattr(cmdname, 'uuid') and cmdname.uuid in self.commands:
+                    cc.command = self.commands[cmdname.uuid]
+                else:
+                    cc.command = self.commands.find_by_name(cmdname)
             logger.debug("- %s = %s", prop, cc.command.get_name() if cc.command else 'None')
 
     def linkify_a_timeperiod(self, o, prop):
@@ -1247,7 +1271,7 @@ class Regenerator(object):
             self.contacts.add_item(contact)
 
         # Delete some useless contact values
-        # WebUI - todo, perharps we should not nullify these values!
+        # WebUI - todo, perhaps we should not nullify these values!
         del contact.host_notification_commands
         del contact.service_notification_commands
         del contact.host_notification_period
@@ -1374,8 +1398,7 @@ class Regenerator(object):
 
         # WebUI - try to manage time periods correctly!
         # Alignak :
-        # - date range: <class 'alignak.daterange.MonthWeekDayDaterange'>
-        # - time range: <type 'dict'>
+        # - date range: serialization with __sys_python_module__
         # Shinken :
         # - date range: <class 'shinken.daterange.MonthWeekDayDaterange'>
         # - time range: <class 'shinken.daterange.Timerange'>
@@ -1383,13 +1406,11 @@ class Regenerator(object):
         new_drs = []
         for dr in tp.dateranges:
             new_dr = dr
-            # new_dr = Daterange(dr.syear, dr.smon, dr.smday, dr.swday, dr.swday_offset,
-            #                    dr.eyear, dr.emon, dr.emday, dr.ewday, dr.ewday_offset,
-            #                    dr.skip_interval, dr.other)
-            logger.debug("- date range: %s (%s)", type(dr), dr.__dict__)
-            # logger.warning("- date range: %s (%s)", type(new_dr), new_dr.__dict__)
+            if '__sys_python_module__' in dr:
+                new_dr = Daterange(dr['content'], parsing=False)
+            logger.debug("- date range: %s (%s)", type(new_dr), new_dr)
             new_trs = []
-            for tr in dr.timeranges:
+            for tr in new_dr.timeranges:
                 # Time range may be a dictionary or an object
                 logger.debug("  time range: %s - %s", type(tr), tr)
                 try:
@@ -1404,7 +1425,7 @@ class Regenerator(object):
                 logger.debug("  time range: %s", entry)
                 new_trs.append(Timerange(entry))
             new_dr.timeranges = new_trs
-            logger.debug("- date range: %s", dr.__dict__)
+            logger.debug("- date range: %s", new_dr.__dict__)
             new_drs.append(new_dr)
 
         tp.dateranges = new_drs
@@ -1420,7 +1441,6 @@ class Regenerator(object):
         inst_id = data['instance_id']
 
         logger.debug("Creating a command: %s from scheduler %s", cname, inst_id)
-        logger.debug("Creating a command: %s ", data)
 
         c = self.commands.find_by_name(cname)
         if c:

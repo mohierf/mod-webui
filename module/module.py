@@ -1273,6 +1273,12 @@ class WebuiBroker(BaseModule, Daemon):
 
         return search
 
+    def redirect_not_found(self, msg="Requested item not found"):
+        app.response.content_type = 'application/json'
+        raise self.bottle.HTTPError(404, {
+            '_error': msg
+        })
+
     def redirect404(self, msg="Not found"):
         raise self.bottle.HTTPError(404, msg)
 

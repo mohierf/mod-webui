@@ -25,10 +25,7 @@
 # along with Shinken.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
-ALIGNAK = False
-if os.environ.get('ALIGNAK_SHINKEN_UI', None):
-    if os.environ.get('ALIGNAK_SHINKEN_UI') not in ['0']:
-        ALIGNAK = True
+ALIGNAK = os.environ.get('ALIGNAK_DAEMON', None) is not None
 if ALIGNAK:
     # Specific logger configuration
     import logging
