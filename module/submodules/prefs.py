@@ -6,8 +6,6 @@ import traceback
 import json
 import time
 
-import pymongo
-
 try:
     from pymongo import MongoClient
 except ImportError:
@@ -125,7 +123,7 @@ class MongoDBPreferences(object):
         by updating a documetn in a collection
         """
         if not self.uri:
-            return
+            return False
 
         logger.info("[mongo-prefs] Trying to open a Mongodb connection to %s, database: %s",
                     self.uri, self.database)
