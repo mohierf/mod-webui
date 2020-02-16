@@ -89,10 +89,12 @@ class MongoDBLogs(object):
         logger.info('[mongo-logs] database: %s, user: %s', self.database, self.username)
 
         self.logs_collection = getattr(mod_conf, 'logs_collection', 'logs')
-        logger.info('[mongo-logs] shinken logs collection: %s', self.logs_collection)
+        logger.info('[mongo-logs] monitoring framework logs collection: %s',
+                    self.logs_collection)
 
         self.hav_collection = getattr(mod_conf, 'hav_collection', 'availability')
-        logger.info('[mongo-logs] hosts availability collection: %s', self.hav_collection)
+        logger.info('[mongo-logs] hosts availability collection: %s',
+                    self.hav_collection)
 
         # self.max_records = int(getattr(mod_conf, 'max_records', '200'))
         # logger.info('[mongo-logs] max records: %s' % self.max_records)
@@ -135,8 +137,13 @@ class MongoDBLogs(object):
                 logger.info("[mongo-logs] user authenticated: %s", self.username)
 
             # Check if the configured logs collection exist
-            logger.info("[mongo-logs] DB collections: %s", self.db.collection_names())
-            if self.logs_collection not in self.db.collection_names():
+            try:
+                system_filter = {"name": {"$regex": r"^(?!system\.)"}}
+                collection_names = self.db.list_collection_names(filter=system_filter)
+            except Exception:  # pylint: disable=broad-except
+                collection_names = self.db.list_collection_names()
+            logger.info("[mongo-logs] DB collections: %s", collection_names)
+            if self.logs_collection not in collection_names:
                 logger.warning("[mongo-logs] configured logs collection '%s' "
                                "does not exist in the database", self.logs_collection)
 
