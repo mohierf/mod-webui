@@ -655,7 +655,10 @@ class WebuiBroker(BaseModule, Daemon):
         logger.debug("manage_brok_thread start ...")
 
         while not self.interrupted:
-            start = time.clock()
+            if sys.version_info[0] >= 3 and sys.version_info[1] >= 8:
+                start = time.perf_counter()
+            else:
+                start = time.clock()
             # Get messages in the queue
             try:
                 message = self.to_q.get()
@@ -708,8 +711,12 @@ class WebuiBroker(BaseModule, Daemon):
                     self.nb_writers -= 1
                     self.global_lock.release()
 
-            logger.debug("time to manage %d broks (time %.2gs)",
-                         len(message), time.clock() - start)
+            if sys.version_info[0] >= 3 and sys.version_info[1] >= 8:
+                logger.debug("time to manage %d broks (time %.2gs)",
+                            len(message), time.perf_counter() - start)
+            else:
+                logger.debug("time to manage %d broks (time %.2gs)",
+                            len(message), time.clock() - start)
         logger.info("Exiting the manage broks thread...")
 
     def fmwk_thread(self):
